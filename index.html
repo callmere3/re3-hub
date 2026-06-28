@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru" data-theme="light">
+<html lang="ru" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -7,6 +7,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="RE3 Hub">
 <title>RE3 Hub</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <style>
 :root{--bg:#f4f3f0;--bg2:#ffffff;--bg3:#eeeceb;--border:#e4e2df;--border2:#d0cdc9;--text:#111110;--text2:#6b6966;--text3:#9c9996;--accent:#6e5fd4;--accent-bg:#f0eefb;--accent-text:#4a3fa8;--success:#2d8a5e;--success-bg:#eaf6f1;--warning:#c47c1a;--warning-bg:#fef4e4;--danger:#c0392b;--danger-bg:#fdf0ee;--radius:10px;--radius-lg:14px}
 [data-theme="dark"]{--bg:#111110;--bg2:#1c1c1a;--bg3:#252522;--border:#2e2e2a;--border2:#3a3a36;--text:#f0ede8;--text2:#8a8780;--text3:#5a5854;--accent:#8b7ee8;--accent-bg:#1e1b33;--accent-text:#b0a6f0;--success:#3dab78;--success-bg:#0e2219;--warning:#e09333;--warning-bg:#261a08;--danger:#e05c4b;--danger-bg:#280f0c}
@@ -14,7 +16,7 @@
 body{font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 
 /* NAV */
-.nav{height:52px;display:flex;align-items:center;padding:0 16px;background:var(--bg2);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50;gap:2px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.nav{height:calc(52px + env(safe-area-inset-top));display:flex;align-items:center;padding:env(safe-area-inset-top) 16px 0;background:var(--bg2);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50;gap:2px;overflow-x:auto;-webkit-overflow-scrolling:touch}
 body{padding-bottom:env(safe-area-inset-bottom)}
 .nav-logo{font-size:14px;font-weight:700;color:var(--text);margin-right:8px;padding:6px 10px;border-radius:var(--radius);background:var(--bg3);white-space:nowrap;flex-shrink:0}
 .nav-sep{width:1px;height:18px;background:var(--border);margin:0 6px;flex-shrink:0}
@@ -22,8 +24,6 @@ body{padding-bottom:env(safe-area-inset-bottom)}
 .nav-btn:hover{background:var(--bg3);color:var(--text)}
 .nav-btn.active{background:var(--accent-bg);color:var(--accent-text);font-weight:600}
 .nav-spacer{flex:1}
-.theme-btn{background:none;border:1px solid var(--border);cursor:pointer;border-radius:var(--radius);width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
-.theme-btn:hover{background:var(--bg3)}
 
 /* PAGES */
 .page{display:none;padding:20px 16px;max-width:1100px;margin:0 auto}
@@ -168,9 +168,8 @@ body{padding-bottom:env(safe-area-inset-bottom)}
   <button class="nav-btn" onclick="showPage('calendar',this)">Календарь</button>
   <button class="nav-btn" onclick="showPage('finance',this)">Финансы</button>
   <div class="nav-spacer"></div>
-  <button class="theme-btn" onclick="toggleTheme()" id="theme-btn">🌙</button>
 </nav>
-<div id="loading-bar" style="display:none;position:fixed;top:52px;left:0;right:0;z-index:49;background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 16px;font-size:13px;color:var(--text2)">
+<div id="loading-bar" style="display:none;position:fixed;top:calc(52px + env(safe-area-inset-top));left:0;right:0;z-index:49;background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 16px;font-size:13px;color:var(--text2)">
   <div style="width:18px;height:18px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0"></div>
   Загрузка данных...
 </div>
@@ -337,7 +336,7 @@ body{padding-bottom:env(safe-area-inset-bottom)}
 
 <script>
 var SCRIPT_URL='https://script.google.com/macros/s/AKfycbxWaVLP8OUKgyse3dptdWcncHD4nMKF6MIMtYQguTqfbInNyV2trHD51XuS_RYLACbq/exec';
-var theme=localStorage.getItem('re3_theme')||'light';
+var theme='dark';
 var home={"name":"RE3","role":"Music Producer · Mixing engineer · Artist","bio":"Credits: Люся Чеботина, Jakone, TATAR, mzlff, СТС, ТНТ","ig":"https://instagram.com/re3_music","tg":"https://t.me/re3_music","ym":"","photo":"","ig-qr":"","tg-qr":""};
 var reels=[],fins=[],folders=[],notes=[],releases=[];
 var cur=new Date(); cur.setDate(1);
@@ -389,16 +388,7 @@ function loadAll(cb){
   });
 }
 
-function applyTheme(){
-  document.documentElement.setAttribute('data-theme',theme);
-  document.getElementById('theme-btn').textContent=theme==='dark'?'☀️':'🌙';
-}
-function toggleTheme(){
-  theme=theme==='light'?'dark':'light';
-  localStorage.setItem('re3_theme',theme);
-  applyTheme();
-}
-applyTheme();
+
 
 function showPage(id,btn){
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
