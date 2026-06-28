@@ -25,7 +25,6 @@ body{
   width:100%;
   max-width:420px;
   overflow:hidden;
-  box-shadow:0 4px 32px rgba(0,0,0,.7);
 }
 
 .cover{
@@ -148,14 +147,21 @@ fetch(SCRIPT_URL+'?key=re3_home')
   .then(function(t){
     try{
       var data=JSON.parse(t);
-      if(data && data.name) render(data);
-      else throw new Error('no data');
+      if(data && data.name){
+        render(data);
+        /* DEBUG: раскомментируй чтобы увидеть что пришло из Apps Script
+        var dbg=document.createElement('pre');
+        dbg.style.cssText='font-size:10px;color:rgba(255,255,255,.3);padding:12px;word-break:break-all;white-space:pre-wrap';
+        dbg.textContent=JSON.stringify(data,null,2);
+        document.body.appendChild(dbg);
+        */
+      } else throw new Error('no data');
     } catch(e){
-      render({name:'RE3',role:'Music Producer · Mixing engineer · Artist',bio:'Credits: Люся Чеботина, Jakone, TATAR, mzlff, СТС, ТНТ',ig:'https://instagram.com/re3_music',tg:'https://t.me/re3_music'});
+      render({name:'RE3',role:'Music Producer · Mixing engineer · Artist',bio:'Credits: Люся Чеботина, Jakone, TATAR, mzlff, СТС, ТНТ',ig:'https://www.instagram.com/re3_music',tg:'https://t.me/re3_music',photo:'https://callmere3.github.io/re3-hub/photo.jpg','ig-qr':'https://callmere3.github.io/re3-hub/qr-ig.png','tg-qr':'https://callmere3.github.io/re3-hub/qr-tg.png'});
     }
   })
   .catch(function(){
-    render({name:'RE3',role:'Music Producer · Mixing engineer · Artist',bio:'Credits: Люся Чеботина, Jakone, TATAR, mzlff, СТС, ТНТ',ig:'https://instagram.com/re3_music',tg:'https://t.me/re3_music'});
+    render({name:'RE3',role:'Music Producer · Mixing engineer · Artist',bio:'Credits: Люся Чеботина, Jakone, TATAR, mzlff, СТС, ТНТ',ig:'https://www.instagram.com/re3_music',tg:'https://t.me/re3_music',photo:'https://callmere3.github.io/re3-hub/photo.jpg','ig-qr':'https://callmere3.github.io/re3-hub/qr-ig.png','tg-qr':'https://callmere3.github.io/re3-hub/qr-tg.png'});
   });
 </script>
 </body>
