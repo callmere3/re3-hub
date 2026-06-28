@@ -209,6 +209,10 @@ body{padding-bottom:env(safe-area-inset-bottom)}
 .splash-dot{width:6px;height:6px;border-radius:50%;background:#9b3030;animation:splash-pulse 1s ease-in-out infinite;opacity:.3}
 @keyframes splash-pulse{0%,100%{opacity:.3;transform:scale(1)}50%{opacity:1;transform:scale(1.4)}}
 
+.share-btn{width:100%;margin-top:14px;background:none;border:1px solid rgba(255,255,255,.12);border-radius:var(--radius);padding:10px 14px;cursor:pointer;font-size:13px;color:rgba(255,255,255,.5);font-family:inherit;font-weight:500;display:flex;align-items:center;justify-content:center;gap:7px;transition:all .2s}
+.share-btn:hover{background:rgba(255,255,255,.07);color:#fff;border-color:rgba(255,255,255,.22)}
+.share-btn svg{width:15px;height:15px;flex-shrink:0}
+
 </style>
 </head>
 <body>
@@ -503,6 +507,10 @@ function renderHome(){
     '<div class="home-role">'+(h.role||'')+'</div>'+
     (h.bio?'<div class="home-bio">'+(h.bio||'')+'</div>':'')+
     '<div class="social-links">'+links+'</div>'+
+    '<button class="share-btn" onclick="shareCard()">'+
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">'+
+    '<path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/>'+
+    '</svg>Поделиться визиткой</button>'+
     '</div></div>';
 }
 function openHomeModal(){
@@ -1122,6 +1130,24 @@ function toggleQr(boxId,btnId){
   if(btn){
     btn.classList.toggle('open');
     btn.textContent=box.classList.contains('open')?'Скрыть':'Показать QR';
+  }
+}
+
+function shareCard(){
+  var url='https://callmere3.github.io/re3-hub/card.html';
+  if(navigator.share){
+    navigator.share({
+      title:(home.name||'RE3')+' — визитка',
+      text:(home.role||''),
+      url:url
+    }).catch(function(){});
+  } else {
+    navigator.clipboard.writeText(url).then(function(){
+      var btn=document.querySelector('.share-btn');
+      if(btn){var old=btn.innerHTML;btn.textContent='Ссылка скопирована ✓';setTimeout(function(){btn.innerHTML=old;},2000);}
+    }).catch(function(){
+      prompt('Скопируй ссылку:',url);
+    });
   }
 }
 
