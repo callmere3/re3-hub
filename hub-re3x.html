@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<!-- RE3 Hub v1.9.1 | 2026-06-28 -->
+<!-- RE3 Hub v1.9.2 | 2026-06-28 -->
 <html lang="ru" data-theme="dark">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no, maximum-scale=1.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="RE3 Hub">
@@ -33,7 +33,7 @@
 --radius-lg:14px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;background:#0e0e0e;color:#fff;min-height:100vh}
+body{font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;background:#0e0e0e;color:#fff;min-height:100vh;touch-action:manipulation}
 
 /* NAV */
 .nav{height:calc(52px + env(safe-area-inset-top));display:flex;align-items:center;padding:env(safe-area-inset-top) 16px 0;background:#0e0e0e;border-bottom:1px solid rgba(255,255,255,.07);position:sticky;top:0;z-index:50;gap:2px;overflow-x:auto;-webkit-overflow-scrolling:touch}
@@ -1310,19 +1310,30 @@ var pages=['home','notes','calendar','finance'];
 var currentPage=0;
 var touchStartX=0;
 var touchStartY=0;
+var touchStartedInNav=false;
+var NAV_HEIGHT=60;
+
+/* Блокируем pinch-zoom (gesturestart — Safari) */
+document.addEventListener('gesturestart',function(e){e.preventDefault();},{passive:false});
+document.addEventListener('gesturechange',function(e){e.preventDefault();},{passive:false});
+
+/* Блокируем pinch-zoom через touchmove с двумя пальцами */
+document.addEventListener('touchmove',function(e){
+  if(e.touches.length>1) e.preventDefault();
+},{passive:false});
 
 document.addEventListener('touchstart',function(e){
   touchStartX=e.touches[0].clientX;
   touchStartY=e.touches[0].clientY;
+  touchStartedInNav=touchStartY<NAV_HEIGHT;
 },{passive:true});
 
 document.addEventListener('touchend',function(e){
   var dx=e.changedTouches[0].clientX-touchStartX;
   var dy=e.changedTouches[0].clientY-touchStartY;
-  // Only horizontal swipe, ignore if vertical scroll
   if(Math.abs(dx)<60||Math.abs(dy)>Math.abs(dx)) return;
-  // Ignore swipe if modal is open
   if(document.querySelector('.ov.open')) return;
+  if(touchStartedInNav) return;
   var nextPage;
   if(dx<0 && currentPage<pages.length-1){
     nextPage=currentPage+1;
