@@ -159,16 +159,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;
 <nav class="nav">
   <span class="nav-logo">RE3</span>
   <div class="nav-sep"></div>
-  <button class="nav-btn active" onclick="showPage('home',this)">Р“Р»Р°РІРЅР°СЏ</button>
-  <button class="nav-btn" onclick="showPage('notes',this)">Р—Р°РјРµС‚РєРё</button>
-  <button class="nav-btn" onclick="showPage('calendar',this)">РљР°Р»РµРЅРґР°СЂСЊ</button>
-  <button class="nav-btn" onclick="showPage('finance',this)">Р¤РёРЅР°РЅСЃС‹</button>
+  <button class="nav-btn active" onclick="showPage('home',this)">Главная</button>
+  <button class="nav-btn" onclick="showPage('notes',this)">Заметки</button>
+  <button class="nav-btn" onclick="showPage('calendar',this)">Календарь</button>
+  <button class="nav-btn" onclick="showPage('finance',this)">Финансы</button>
   <div class="nav-spacer"></div>
-  <button class="theme-btn" onclick="toggleTheme()" id="theme-btn">рџЊ™</button>
+  <button class="theme-btn" onclick="toggleTheme()" id="theme-btn">🌙</button>
 </nav>
 <div id="loading-bar" style="display:none;position:fixed;top:52px;left:0;right:0;z-index:49;background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 16px;align-items:center;gap:10px;font-size:13px;color:var(--text2)">
   <div style="width:18px;height:18px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0"></div>
-  Р—Р°РіСЂСѓР·РєР° РґР°РЅРЅС‹С…...
+  Загрузка данных...
 </div>
 <div id="sync-status" style="position:fixed;bottom:16px;right:16px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:6px 12px;font-size:12px;color:var(--text2);opacity:0;transition:opacity .3s;z-index:49;pointer-events:none"></div>
 <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
@@ -185,20 +185,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;
     <button class="cal-nav-btn" onclick="pm()">&#8249;</button>
     <span class="cal-month" id="mtitle"></span>
     <button class="cal-nav-btn" onclick="nm()">&#8250;</button>
-    <button class="btn-primary" onclick="openReelModal()">+ Р РёР»СЃ</button>
-    <button class="btn-ghost" onclick="openReleaseModal()" style="border-color:#f9a8d4;color:#9d174d">+ Р РµР»РёР·</button>
+    <button class="btn-primary" onclick="openReelModal()">+ Рилс</button>
+    <button class="btn-ghost" onclick="openReleaseModal()" style="border-color:#f9a8d4;color:#9d174d">+ Релиз</button>
   </div>
-  <div class="wds"><div class="wd">РџРЅ</div><div class="wd">Р’С‚</div><div class="wd">РЎСЂ</div><div class="wd">Р§С‚</div><div class="wd">РџС‚</div><div class="wd">РЎР±</div><div class="wd">Р’СЃ</div></div>
+  <div class="wds"><div class="wd">Пн</div><div class="wd">Вт</div><div class="wd">Ср</div><div class="wd">Чт</div><div class="wd">Пт</div><div class="wd">Сб</div><div class="wd">Вс</div></div>
   <div class="cgrid" id="cgrid"></div>
   <div class="cal-bottom">
-    <div class="card"><div class="clabel">Р­С‚РѕС‚ РјРµСЃСЏС†</div><div class="stat-grid" id="cal-stats"></div></div>
+    <div class="card"><div class="clabel">Этот месяц</div><div class="stat-grid" id="cal-stats"></div></div>
     <div class="card">
-      <div class="clabel">РЎС‚Р°С‚СѓСЃС‹</div>
+      <div class="clabel">Статусы</div>
       <div style="display:flex;flex-direction:column;gap:8px">
-        <div class="leg-row"><div class="leg-dot" style="background:var(--accent-bg);border:1px solid var(--accent)"></div><span>РРґРµСЏ</span></div>
-        <div class="leg-row"><div class="leg-dot" style="background:var(--warning-bg);border:1px solid var(--warning)"></div><span>Р“РѕС‚РѕРІ</span></div>
-        <div class="leg-row"><div class="leg-dot" style="background:var(--success-bg);border:1px solid var(--success)"></div><span>РћРїСѓР±Р»РёРєРѕРІР°РЅ</span></div>
-        <div class="leg-row"><div class="leg-dot" style="background:#fce7f3;border:1px solid #f9a8d4"></div><span>Р РµР»РёР· С‚СЂРµРєР°</span></div>
+        <div class="leg-row"><div class="leg-dot" style="background:var(--accent-bg);border:1px solid var(--accent)"></div><span>Идея</span></div>
+        <div class="leg-row"><div class="leg-dot" style="background:var(--warning-bg);border:1px solid var(--warning)"></div><span>Готов</span></div>
+        <div class="leg-row"><div class="leg-dot" style="background:var(--success-bg);border:1px solid var(--success)"></div><span>Опубликован</span></div>
+        <div class="leg-row"><div class="leg-dot" style="background:#fce7f3;border:1px solid #f9a8d4"></div><span>Релиз трека</span></div>
       </div>
     </div>
   </div>
@@ -209,11 +209,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;
   <div id="balance-banner"></div>
   <div class="fin-cols">
     <div>
-      <div class="fin-col-header"><span class="fin-col-title">Р”РѕС…РѕРґС‹</span><button class="btn-primary" onclick="openFinModal('income')">+ Р”РѕС…РѕРґ</button></div>
+      <div class="fin-col-header"><span class="fin-col-title">Доходы</span><button class="btn-primary" onclick="openFinModal('income')">+ Доход</button></div>
       <div class="fin-list" id="income-list"></div>
     </div>
     <div>
-      <div class="fin-col-header"><span class="fin-col-title">Р Р°СЃС…РѕРґС‹</span><button class="btn-primary" onclick="openFinModal('expense')">+ Р Р°СЃС…РѕРґ</button></div>
+      <div class="fin-col-header"><span class="fin-col-title">Расходы</span><button class="btn-primary" onclick="openFinModal('expense')">+ Расход</button></div>
       <div class="fin-list" id="expense-list"></div>
     </div>
   </div>
@@ -222,19 +222,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;
 <!-- MODAL: Home -->
 <div class="ov" id="ov-home">
   <div class="modal">
-    <div class="modal-title">Р РµРґР°РєС‚РёСЂРѕРІР°С‚СЊ РІРёР·РёС‚РєСѓ</div>
-    <div class="fl"><label>РРјСЏ</label><input id="h-name" type="text" placeholder="RE3"></div>
-    <div class="fl"><label>Р РѕР»СЊ</label><input id="h-role" type="text" placeholder="Music Producer В· Electronic В· Phonk"></div>
+    <div class="modal-title">Редактировать визитку</div>
+    <div class="fl"><label>Имя</label><input id="h-name" type="text" placeholder="RE3"></div>
+    <div class="fl"><label>Роль</label><input id="h-role" type="text" placeholder="Music Producer · Electronic · Phonk"></div>
     <div class="fl"><label>Bio</label><textarea id="h-bio" style="min-height:70px" placeholder="Credits: H1GH, Legovich..."></textarea></div>
-    <div class="fl"><label>Р¤РѕС‚Рѕ URL</label><input id="h-photo" type="text" placeholder="https://...jpg"></div>
+    <div class="fl"><label>Фото URL</label><input id="h-photo" type="text" placeholder="https://...jpg"></div>
     <div class="fl"><label>Instagram URL</label><input id="h-ig" type="text" placeholder="https://instagram.com/re3_music"></div>
     <div class="fl"><label>Instagram QR URL</label><input id="h-ig-qr" type="text" placeholder="https://...jpg"></div>
     <div class="fl"><label>Telegram URL</label><input id="h-tg" type="text" placeholder="https://t.me/re3_music"></div>
     <div class="fl"><label>Telegram QR URL</label><input id="h-tg-qr" type="text" placeholder="https://...jpg"></div>
-    <div class="fl"><label>РЇРЅРґРµРєСЃ РњСѓР·С‹РєР° URL</label><input id="h-ym" type="text" placeholder="https://music.yandex.ru/..."></div>
+    <div class="fl"><label>Яндекс Музыка URL</label><input id="h-ym" type="text" placeholder="https://music.yandex.ru/..."></div>
     <div class="macts">
-      <button class="btn-ghost" onclick="closeOv('ov-home')">РћС‚РјРµРЅР°</button>
-      <button class="btn-primary" onclick="saveHome()">РЎРѕС…СЂР°РЅРёС‚СЊ</button>
+      <button class="btn-ghost" onclick="closeOv('ov-home')">Отмена</button>
+      <button class="btn-primary" onclick="saveHome()">Сохранить</button>
     </div>
   </div>
 </div>
@@ -242,10 +242,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;
 <!-- MODAL: Day picker -->
 <div class="ov" id="ov-daypick">
   <div class="modal">
-    <div class="modal-title" id="daypick-title">Р”РѕР±Р°РІРёС‚СЊ РЅР° РґРµРЅСЊ</div>
+    <div class="modal-title" id="daypick-title">Добавить на день</div>
     <div class="day-pick">
-      <button class="day-pick-btn" onclick="pickReel()"><span class="day-pick-icon">рџЋ¬</span><div><div>Р РёР»СЃ</div><div style="font-size:11px;color:var(--text3);font-weight:400;margin-top:2px">Р—Р°РїР»Р°РЅРёСЂРѕРІР°С‚СЊ РїСѓР±Р»РёРєР°С†РёСЋ</div></div></button>
-      <button class="day-pick-btn" onclick="pickRelease()"><span class="day-pick-icon">рџЋµ</span><div><div>Р РµР»РёР· С‚СЂРµРєР°</div><div style="font-size:11px;color:var(--text3);font-weight:400;margin-top:2px">РћС‚РјРµС‚РёС‚СЊ РґР°С‚Сѓ РІС‹С…РѕРґР°</div></div></button>
+      <button class="day-pick-btn" onclick="pickReel()"><span class="day-pick-icon">🎬</span><div><div>Рилс</div><div style="font-size:11px;color:var(--text3);font-weight:400;margin-top:2px">Запланировать публикацию</div></div></button>
+      <button class="day-pick-btn" onclick="pickRelease()"><span class="day-pick-icon">🎵</span><div><div>Релиз трека</div><div style="font-size:11px;color:var(--text3);font-weight:400;margin-top:2px">Отметить дату выхода</div></div></button>
     </div>
   </div>
 </div>
@@ -253,14 +253,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;
 <!-- MODAL: Release -->
 <div class="ov" id="ov-release">
   <div class="modal">
-    <div class="modal-title" id="reltit">РќРѕРІС‹Р№ СЂРµР»РёР·</div>
-    <div class="fl"><label>РќР°Р·РІР°РЅРёРµ С‚СЂРµРєР°</label><input id="rel-name" type="text" placeholder="Turn it up!"></div>
-    <div class="fl"><label>Р”Р°С‚Р° СЂРµР»РёР·Р°</label><input id="rel-date" type="date"></div>
-    <div class="fl"><label>РџР»Р°С‚С„РѕСЂРјР° / СЃСЃС‹Р»РєР° (РЅРµРѕР±СЏР·Р°С‚РµР»СЊРЅРѕ)</label><input id="rel-link" type="text" placeholder="https://music.yandex.ru/..."></div>
+    <div class="modal-title" id="reltit">Новый релиз</div>
+    <div class="fl"><label>Название трека</label><input id="rel-name" type="text" placeholder="Turn it up!"></div>
+    <div class="fl"><label>Дата релиза</label><input id="rel-date" type="date"></div>
+    <div class="fl"><label>Платформа / ссылка (необязательно)</label><input id="rel-link" type="text" placeholder="https://music.yandex.ru/..."></div>
     <div class="macts">
-      <button class="btn-danger" id="reldl" onclick="delRelease()" style="display:none">РЈРґР°Р»РёС‚СЊ</button>
-      <button class="btn-ghost" onclick="closeOv('ov-release')">РћС‚РјРµРЅР°</button>
-      <button class="btn-primary" onclick="saveRelease()">РЎРѕС…СЂР°РЅРёС‚СЊ</button>
+      <button class="btn-danger" id="reldl" onclick="delRelease()" style="display:none">Удалить</button>
+      <button class="btn-ghost" onclick="closeOv('ov-release')">Отмена</button>
+      <button class="btn-primary" onclick="saveRelease()">Сохранить</button>
     </div>
   </div>
 </div>
@@ -268,19 +268,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;
 <!-- MODAL: Reel -->
 <div class="ov" id="ov-reel">
   <div class="modal">
-    <div class="modal-title" id="rtit">РќРѕРІС‹Р№ СЂРёР»СЃ</div>
-    <div class="fl"><label>РќР°Р·РІР°РЅРёРµ</label><input id="rn" type="text" placeholder="DAW breakdown вЂ” Turn it up!"></div>
+    <div class="modal-title" id="rtit">Новый рилс</div>
+    <div class="fl"><label>Название</label><input id="rn" type="text" placeholder="DAW breakdown — Turn it up!"></div>
     <div class="fl-row">
-      <div class="fl"><label>Р”Р°С‚Р°</label><input id="rd" type="date"></div>
-      <div class="fl"><label>РЎС‚Р°С‚СѓСЃ</label>
-        <select id="rs"><option value="idea">РРґРµСЏ</option><option value="ready">Р“РѕС‚РѕРІ</option><option value="pub">РћРїСѓР±Р»РёРєРѕРІР°РЅ</option></select>
+      <div class="fl"><label>Дата</label><input id="rd" type="date"></div>
+      <div class="fl"><label>Статус</label>
+        <select id="rs"><option value="idea">Идея</option><option value="ready">Готов</option><option value="pub">Опубликован</option></select>
       </div>
     </div>
-    <div class="fl"><label>Caption / С…СЌС€С‚РµРіРё</label><textarea id="rc" placeholder="Every layer that makes this groove work #nudisco"></textarea></div>
+    <div class="fl"><label>Caption / хэштеги</label><textarea id="rc" placeholder="Every layer that makes this groove work #nudisco"></textarea></div>
     <div class="macts">
-      <button class="btn-danger" id="rdl" onclick="delReel()" style="display:none">РЈРґР°Р»РёС‚СЊ</button>
-      <button class="btn-ghost" onclick="closeOv('ov-reel')">РћС‚РјРµРЅР°</button>
-      <button class="btn-primary" onclick="saveReel()">РЎРѕС…СЂР°РЅРёС‚СЊ</button>
+      <button class="btn-danger" id="rdl" onclick="delReel()" style="display:none">Удалить</button>
+      <button class="btn-ghost" onclick="closeOv('ov-reel')">Отмена</button>
+      <button class="btn-primary" onclick="saveReel()">Сохранить</button>
     </div>
   </div>
 </div>
@@ -288,19 +288,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;
 <!-- MODAL: Finance -->
 <div class="ov" id="ov-fin">
   <div class="modal">
-    <div class="modal-title" id="ftit">РќРѕРІС‹Р№ РґРѕС…РѕРґ</div>
-    <div class="fl"><label>РќР°Р·РІР°РЅРёРµ</label><input id="fn-name" type="text" placeholder="Р‘РёС‚СЃРµР»Р» вЂ” Jakone"></div>
+    <div class="modal-title" id="ftit">Новый доход</div>
+    <div class="fl"><label>Название</label><input id="fn-name" type="text" placeholder="Битселл — Jakone"></div>
     <div class="fl-row">
-      <div class="fl"><label>РЎСѓРјРјР° (в‚Ѕ)</label><input id="fn-amount" type="number" placeholder="15000"></div>
-      <div class="fl" id="fn-status-wrap"><label>РЎС‚Р°С‚СѓСЃ</label>
-        <select id="fn-status"><option value="paid">Р’С‹РїР»Р°С‡РµРЅРѕ</option><option value="pending">РћР¶РёРґР°РµС‚</option></select>
+      <div class="fl"><label>Сумма (₽)</label><input id="fn-amount" type="number" placeholder="15000"></div>
+      <div class="fl" id="fn-status-wrap"><label>Статус</label>
+        <select id="fn-status"><option value="paid">Выплачено</option><option value="pending">Ожидает</option></select>
       </div>
     </div>
-    <div class="fl"><label>РћРїРёСЃР°РЅРёРµ</label><input id="fn-desc" type="text" placeholder="Р­РєСЃРєР»СЋР·РёРІ, СЂРѕСЏР»С‚Рё..."></div>
+    <div class="fl"><label>Описание</label><input id="fn-desc" type="text" placeholder="Эксклюзив, роялти..."></div>
     <div class="macts">
-      <button class="btn-danger" id="fdl" onclick="delFin()" style="display:none">РЈРґР°Р»РёС‚СЊ</button>
-      <button class="btn-ghost" onclick="closeOv('ov-fin')">РћС‚РјРµРЅР°</button>
-      <button class="btn-primary" onclick="saveFin()">РЎРѕС…СЂР°РЅРёС‚СЊ</button>
+      <button class="btn-danger" id="fdl" onclick="delFin()" style="display:none">Удалить</button>
+      <button class="btn-ghost" onclick="closeOv('ov-fin')">Отмена</button>
+      <button class="btn-primary" onclick="saveFin()">Сохранить</button>
     </div>
   </div>
 </div>
@@ -308,11 +308,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;
 <!-- MODAL: Folder -->
 <div class="ov" id="ov-folder">
   <div class="modal">
-    <div class="modal-title">РќРѕРІР°СЏ РїР°РїРєР°</div>
-    <div class="fl"><label>РќР°Р·РІР°РЅРёРµ</label><input id="fold-name" type="text" placeholder="РҐСѓРєРё, РРґРµРё, РўРµРєСЃС‚С‹..."></div>
+    <div class="modal-title">Новая папка</div>
+    <div class="fl"><label>Название</label><input id="fold-name" type="text" placeholder="Хуки, Идеи, Тексты..."></div>
     <div class="macts">
-      <button class="btn-ghost" onclick="closeOv('ov-folder')">РћС‚РјРµРЅР°</button>
-      <button class="btn-primary" onclick="saveFolder()">РЎРѕР·РґР°С‚СЊ</button>
+      <button class="btn-ghost" onclick="closeOv('ov-folder')">Отмена</button>
+      <button class="btn-primary" onclick="saveFolder()">Создать</button>
     </div>
   </div>
 </div>
@@ -320,13 +320,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;
 <!-- MODAL: Note -->
 <div class="ov" id="ov-note">
   <div class="modal wide">
-    <div class="modal-title" id="ntit">РќРѕРІР°СЏ Р·Р°РјРµС‚РєР°</div>
-    <div class="fl"><label>Р—Р°РіРѕР»РѕРІРѕРє</label><input id="nn-title" type="text" placeholder="РҐСѓРєРё РґР»СЏ Turn it up!"></div>
-    <div class="fl"><label>РўРµРєСЃС‚</label><textarea id="nn-text" style="min-height:200px" placeholder="Р—Р°РїРёС€Рё РёРґРµСЋ..."></textarea></div>
+    <div class="modal-title" id="ntit">Новая заметка</div>
+    <div class="fl"><label>Заголовок</label><input id="nn-title" type="text" placeholder="Хуки для Turn it up!"></div>
+    <div class="fl"><label>Текст</label><textarea id="nn-text" style="min-height:200px" placeholder="Запиши идею..."></textarea></div>
     <div class="macts">
-      <button class="btn-danger" id="ndl" onclick="delNote()" style="display:none">РЈРґР°Р»РёС‚СЊ</button>
-      <button class="btn-ghost" onclick="closeOv('ov-note')">РћС‚РјРµРЅР°</button>
-      <button class="btn-primary" onclick="saveNote()">РЎРѕС…СЂР°РЅРёС‚СЊ</button>
+      <button class="btn-danger" id="ndl" onclick="delNote()" style="display:none">Удалить</button>
+      <button class="btn-ghost" onclick="closeOv('ov-note')">Отмена</button>
+      <button class="btn-primary" onclick="saveNote()">Сохранить</button>
     </div>
   </div>
 </div>
@@ -334,14 +334,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;
 <script>
 var SCRIPT_URL='https://script.google.com/macros/s/AKfycbxWaVLP8OUKgyse3dptdWcncHD4nMKF6MIMtYQguTqfbInNyV2trHD51XuS_RYLACbq/exec';
 var theme=localStorage.getItem('re3_theme')||'light';
-var home={"name":"RE3","role":"Music Producer В· Mixing engineer В· Artist","bio":"Credits: Р›СЋСЃСЏ Р§РµР±РѕС‚РёРЅР°, Jakone, TATAR, mzlff, РЎРўРЎ, РўРќРў","ig":"https://instagram.com/re3_music","tg":"https://t.me/re3_music","ym":"","photo":"","ig-qr":"","tg-qr":""};
+var home={"name":"RE3","role":"Music Producer · Mixing engineer · Artist","bio":"Credits: Люся Чеботина, Jakone, TATAR, mzlff, СТС, ТНТ","ig":"https://instagram.com/re3_music","tg":"https://t.me/re3_music","ym":"","photo":"","ig-qr":"","tg-qr":""};
 var reels=[],fins=[],folders=[],notes=[],releases=[];
 var cur=new Date(); cur.setDate(1);
 var releid=null,pickedDate='',reid=null,finEid=null,finType='income',neid=null;
 var notesView='folders',activeFolderId=null;
 
-function showSyncing(){var el=document.getElementById('sync-status');if(el){el.textContent='РЎРѕС…СЂР°РЅРµРЅРёРµ...';el.style.opacity='1';}}
-function hideSyncing(){var el=document.getElementById('sync-status');if(el){el.textContent='РЎРѕС…СЂР°РЅРµРЅРѕ вњ“';setTimeout(function(){el.style.opacity='0';},1500);}}
+function showSyncing(){var el=document.getElementById('sync-status');if(el){el.textContent='Сохранение...';el.style.opacity='1';}}
+function hideSyncing(){var el=document.getElementById('sync-status');if(el){el.textContent='Сохранено ✓';setTimeout(function(){el.style.opacity='0';},1500);}}
 function showLoading(show){var el=document.getElementById('loading-bar');if(el){el.style.display=show?'flex':'none';}}
 
 function gsGet(key,cb){
@@ -387,7 +387,7 @@ function loadAll(cb){
 
 function applyTheme(){
   document.documentElement.setAttribute('data-theme',theme);
-  document.getElementById('theme-btn').textContent=theme==='dark'?'вЂпёЏ':'рџЊ™';
+  document.getElementById('theme-btn').textContent=theme==='dark'?'☀️':'🌙';
 }
 function toggleTheme(){
   theme=theme==='light'?'dark':'light';
@@ -415,19 +415,19 @@ function renderHome(){
     :'<div class="home-cover-initials">'+initials+'</div>';
   var links='';
   if(h.ig){
-    var igQrContent=h['ig-qr']?'<img src="'+h['ig-qr']+'" alt="IG QR">':'<div class="qr-box-empty">Р”РѕР±Р°РІСЊ QR РІ СЂРµРґР°РєС‚РѕСЂРµ</div>';
+    var igQrContent=h['ig-qr']?'<img src="'+h['ig-qr']+'" alt="IG QR">':'<div class="qr-box-empty">Добавь QR в редакторе</div>';
     links+='<div class="social-block"><a class="social-link" href="'+h.ig+'" target="_blank">'+h.ig.replace(/https?:\/\/(www\.)?/,'')+'</a></div>';
     links+='<div class="qr-box" id="qr-ig">'+igQrContent+'</div>';
   }
   if(h.tg){
-    var tgQrContent=h['tg-qr']?'<img src="'+h['tg-qr']+'" alt="TG QR">':'<div class="qr-box-empty">Р”РѕР±Р°РІСЊ QR РІ СЂРµРґР°РєС‚РѕСЂРµ</div>';
+    var tgQrContent=h['tg-qr']?'<img src="'+h['tg-qr']+'" alt="TG QR">':'<div class="qr-box-empty">Добавь QR в редакторе</div>';
     links+='<div class="social-block"><a class="social-link" href="'+h.tg+'" target="_blank">'+h.tg.replace(/https?:\/\//,'')+'</a></div>';
     links+='<div class="qr-box" id="qr-tg">'+tgQrContent+'</div>';
   }
-  if(h.ym) links+='<a class="social-link" href="'+h.ym+'" target="_blank"><div class="social-icon">РЇРњ</div>РЇРЅРґРµРєСЃ РњСѓР·С‹РєР°</a>';
+  if(h.ym) links+='<a class="social-link" href="'+h.ym+'" target="_blank"><div class="social-icon">ЯМ</div>Яндекс Музыка</a>';
   document.getElementById('home-card').innerHTML=
     '<div class="home-hero">'+
-    '<button class="edit-home-btn" onclick="openHomeModal()">Р РµРґР°РєС‚РёСЂРѕРІР°С‚СЊ</button>'+
+    '<button class="edit-home-btn" onclick="openHomeModal()">Редактировать</button>'+
     '<div class="home-cover">'+coverHtml+'</div>'+
     '<div class="home-body">'+
     '<div class="home-name">'+(h.name||'RE3')+'</div>'+
@@ -459,7 +459,7 @@ function saveHome(){
 }
 
 /* CALENDAR */
-var MN=['РЇРЅРІР°СЂСЊ','Р¤РµРІСЂР°Р»СЊ','РњР°СЂС‚','РђРїСЂРµР»СЊ','РњР°Р№','РСЋРЅСЊ','РСЋР»СЊ','РђРІРіСѓСЃС‚','РЎРµРЅС‚СЏР±СЂСЊ','РћРєС‚СЏР±СЂСЊ','РќРѕСЏР±СЂСЊ','Р”РµРєР°Р±СЂСЊ'];
+var MN=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
 function renderCal(){
   var y=cur.getFullYear(),m=cur.getMonth();
   document.getElementById('mtitle').textContent=MN[m]+' '+y;
@@ -475,11 +475,11 @@ function renderCal(){
     var ds=y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
     (function(ds,c){
       reels.filter(function(r){return r.date===ds;}).forEach(function(r){
-        var ch=document.createElement('span');ch.className='chip s-'+r.status;ch.textContent=r.name||'Р‘РµР· РЅР°Р·РІР°РЅРёСЏ';
+        var ch=document.createElement('span');ch.className='chip s-'+r.status;ch.textContent=r.name||'Без названия';
         ch.onclick=function(e){e.stopPropagation();openEditReel(r.id);};c.appendChild(ch);
       });
       releases.filter(function(r){return r.date===ds;}).forEach(function(r){
-        var ch=document.createElement('span');ch.className='chip s-release';ch.textContent='рџЋµ '+r.name;
+        var ch=document.createElement('span');ch.className='chip s-release';ch.textContent='🎵 '+r.name;
         ch.onclick=function(e){e.stopPropagation();openEditRelease(r.id);};c.appendChild(ch);
       });
       c.onclick=function(){openDayPick(ds)};
@@ -489,16 +489,16 @@ function renderCal(){
   var pfx=y+'-'+String(m+1).padStart(2,'0');
   var ms=reels.filter(function(r){return r.date.startsWith(pfx);});
   document.getElementById('cal-stats').innerHTML=
-    '<div class="stat"><div class="stat-n">'+ms.filter(function(r){return r.status==='idea';}).length+'</div><div class="stat-l">РРґРµР№</div></div>'+
-    '<div class="stat"><div class="stat-n">'+ms.filter(function(r){return r.status==='ready';}).length+'</div><div class="stat-l">Р“РѕС‚РѕРІРѕ</div></div>'+
-    '<div class="stat"><div class="stat-n">'+ms.filter(function(r){return r.status==='pub';}).length+'</div><div class="stat-l">РћРїСѓР±Р».</div></div>';
+    '<div class="stat"><div class="stat-n">'+ms.filter(function(r){return r.status==='idea';}).length+'</div><div class="stat-l">Идей</div></div>'+
+    '<div class="stat"><div class="stat-n">'+ms.filter(function(r){return r.status==='ready';}).length+'</div><div class="stat-l">Готово</div></div>'+
+    '<div class="stat"><div class="stat-n">'+ms.filter(function(r){return r.status==='pub';}).length+'</div><div class="stat-l">Опубл.</div></div>';
 }
 function pm(){cur.setMonth(cur.getMonth()-1);renderCal();}
 function nm(){cur.setMonth(cur.getMonth()+1);renderCal();}
 function openDayPick(ds){
   pickedDate=ds;
   var parts=ds.split('-');
-  var months=['СЏРЅРІР°СЂСЏ','С„РµРІСЂР°Р»СЏ','РјР°СЂС‚Р°','Р°РїСЂРµР»СЏ','РјР°СЏ','РёСЋРЅСЏ','РёСЋР»СЏ','Р°РІРіСѓСЃС‚Р°','СЃРµРЅС‚СЏР±СЂСЏ','РѕРєС‚СЏР±СЂСЏ','РЅРѕСЏР±СЂСЏ','РґРµРєР°Р±СЂСЏ'];
+  var months=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
   var label=parseInt(parts[2])+' '+months[parseInt(parts[1])-1];
   document.getElementById('daypick-title').textContent=label;
   document.getElementById('ov-daypick').classList.add('open');
@@ -513,7 +513,7 @@ function pickRelease(){
 }
 function openReelModal(ds){
   reid=null;
-  document.getElementById('rtit').textContent='РќРѕРІС‹Р№ СЂРёР»СЃ';
+  document.getElementById('rtit').textContent='Новый рилс';
   document.getElementById('rn').value='';document.getElementById('rd').value=ds||'';
   document.getElementById('rs').value='idea';document.getElementById('rc').value='';
   document.getElementById('rdl').style.display='none';
@@ -521,7 +521,7 @@ function openReelModal(ds){
 }
 function openEditReel(id){
   var r=reels.find(function(x){return x.id===id;});if(!r)return;reid=id;
-  document.getElementById('rtit').textContent='Р РµРґР°РєС‚РёСЂРѕРІР°С‚СЊ СЂРёР»СЃ';
+  document.getElementById('rtit').textContent='Редактировать рилс';
   document.getElementById('rn').value=r.name;document.getElementById('rd').value=r.date;
   document.getElementById('rs').value=r.status;document.getElementById('rc').value=r.desc||'';
   document.getElementById('rdl').style.display='inline-block';
@@ -529,14 +529,14 @@ function openEditReel(id){
 }
 function saveReel(){
   var name=document.getElementById('rn').value.trim(),date=document.getElementById('rd').value;
-  if(!name||!date){alert('РЈРєР°Р¶Рё РЅР°Р·РІР°РЅРёРµ Рё РґР°С‚Сѓ');return;}
+  if(!name||!date){alert('Укажи название и дату');return;}
   var obj={name:name,date:date,status:document.getElementById('rs').value,desc:document.getElementById('rc').value.trim()};
   if(reid){Object.assign(reels.find(function(x){return x.id===reid;}),obj);}
   else{reels.push(Object.assign({id:Date.now().toString()},obj));}
   save('re3_reels',reels);closeOv('ov-reel');renderCal();
 }
 function delReel(){
-  if(!reid||!confirm('РЈРґР°Р»РёС‚СЊ СЂРёР»СЃ?'))return;
+  if(!reid||!confirm('Удалить рилс?'))return;
   reels=reels.filter(function(x){return x.id!==reid;});
   save('re3_reels',reels);closeOv('ov-reel');renderCal();
 }
@@ -545,35 +545,35 @@ function delReel(){
 function renderFin(){
   var inc=fins.filter(function(f){return f.type==='income';}),exp=fins.filter(function(f){return f.type==='expense';});
   var ti=inc.reduce(function(s,f){return s+f.amount;},0),te=exp.reduce(function(s,f){return s+f.amount;},0);
-  function fmt(n){return n.toLocaleString('ru-RU')+'в‚Ѕ';}
+  function fmt(n){return n.toLocaleString('ru-RU')+'₽';}
   document.getElementById('balance-banner').innerHTML=
     '<div class="balance-banner">'+
-    '<div class="bl">Р‘Р°Р»Р°РЅСЃ</div><div class="bv">'+fmt(ti-te)+'</div>'+
+    '<div class="bl">Баланс</div><div class="bv">'+fmt(ti-te)+'</div>'+
     '<div class="balance-pills">'+
-    '<div class="bpill"><div class="bpill-l">Р”РѕС…РѕРґС‹</div><div class="bpill-v inc-color">+'+fmt(ti)+'</div></div>'+
-    '<div class="bpill"><div class="bpill-l">Р Р°СЃС…РѕРґС‹</div><div class="bpill-v exp-color">в€’'+fmt(te)+'</div></div>'+
+    '<div class="bpill"><div class="bpill-l">Доходы</div><div class="bpill-v inc-color">+'+fmt(ti)+'</div></div>'+
+    '<div class="bpill"><div class="bpill-l">Расходы</div><div class="bpill-v exp-color">−'+fmt(te)+'</div></div>'+
     '</div></div>';
   var il=document.getElementById('income-list');
-  il.innerHTML=inc.length?'':'<div class="empty-state">РќРµС‚ РґРѕС…РѕРґРѕРІ</div>';
+  il.innerHTML=inc.length?'':'<div class="empty-state">Нет доходов</div>';
   inc.forEach(function(f){
     var r=document.createElement('div');r.className='fin-row';
     r.innerHTML='<div class="fin-row-body"><div class="fin-row-name">'+f.name+'</div>'+(f.desc?'<div class="fin-row-desc">'+f.desc+'</div>':'')+'</div>'+
-      '<div class="fin-row-right"><div class="fin-amount inc-color">+'+f.amount.toLocaleString('ru-RU')+'в‚Ѕ</div>'+
-      '<span class="badge '+(f.status==='paid'?'badge-paid':'badge-pending')+'">'+(f.status==='paid'?'Р’С‹РїР»Р°С‡РµРЅРѕ':'РћР¶РёРґР°РµС‚')+'</span></div>';
+      '<div class="fin-row-right"><div class="fin-amount inc-color">+'+f.amount.toLocaleString('ru-RU')+'₽</div>'+
+      '<span class="badge '+(f.status==='paid'?'badge-paid':'badge-pending')+'">'+(f.status==='paid'?'Выплачено':'Ожидает')+'</span></div>';
     r.onclick=function(){openEditFin(f.id);};il.appendChild(r);
   });
   var el=document.getElementById('expense-list');
-  el.innerHTML=exp.length?'':'<div class="empty-state">РќРµС‚ СЂР°СЃС…РѕРґРѕРІ</div>';
+  el.innerHTML=exp.length?'':'<div class="empty-state">Нет расходов</div>';
   exp.forEach(function(f){
     var r=document.createElement('div');r.className='fin-row';
     r.innerHTML='<div class="fin-row-body"><div class="fin-row-name">'+f.name+'</div>'+(f.desc?'<div class="fin-row-desc">'+f.desc+'</div>':'')+'</div>'+
-      '<div class="fin-row-right"><div class="fin-amount exp-color">в€’'+f.amount.toLocaleString('ru-RU')+'в‚Ѕ</div></div>';
+      '<div class="fin-row-right"><div class="fin-amount exp-color">−'+f.amount.toLocaleString('ru-RU')+'₽</div></div>';
     r.onclick=function(){openEditFin(f.id);};el.appendChild(r);
   });
 }
 function openFinModal(type){
   finType=type;finEid=null;
-  document.getElementById('ftit').textContent=type==='income'?'РќРѕРІС‹Р№ РґРѕС…РѕРґ':'РќРѕРІС‹Р№ СЂР°СЃС…РѕРґ';
+  document.getElementById('ftit').textContent=type==='income'?'Новый доход':'Новый расход';
   document.getElementById('fn-name').value='';document.getElementById('fn-amount').value='';
   document.getElementById('fn-desc').value='';document.getElementById('fn-status').value='paid';
   document.getElementById('fn-status-wrap').style.display=type==='income'?'block':'none';
@@ -582,7 +582,7 @@ function openFinModal(type){
 }
 function openEditFin(id){
   var f=fins.find(function(x){return x.id===id;});if(!f)return;finEid=id;finType=f.type;
-  document.getElementById('ftit').textContent=f.type==='income'?'Р РµРґР°РєС‚РёСЂРѕРІР°С‚СЊ РґРѕС…РѕРґ':'Р РµРґР°РєС‚РёСЂРѕРІР°С‚СЊ СЂР°СЃС…РѕРґ';
+  document.getElementById('ftit').textContent=f.type==='income'?'Редактировать доход':'Редактировать расход';
   document.getElementById('fn-name').value=f.name;document.getElementById('fn-amount').value=f.amount;
   document.getElementById('fn-desc').value=f.desc||'';document.getElementById('fn-status').value=f.status||'paid';
   document.getElementById('fn-status-wrap').style.display=f.type==='income'?'block':'none';
@@ -591,14 +591,14 @@ function openEditFin(id){
 }
 function saveFin(){
   var name=document.getElementById('fn-name').value.trim(),amount=parseFloat(document.getElementById('fn-amount').value);
-  if(!name||!amount){alert('РЈРєР°Р¶Рё РЅР°Р·РІР°РЅРёРµ Рё СЃСѓРјРјСѓ');return;}
+  if(!name||!amount){alert('Укажи название и сумму');return;}
   var obj={name:name,amount:amount,type:finType,desc:document.getElementById('fn-desc').value.trim(),status:finType==='income'?document.getElementById('fn-status').value:'expense'};
   if(finEid){Object.assign(fins.find(function(x){return x.id===finEid;}),obj);}
   else{fins.push(Object.assign({id:Date.now().toString()},obj));}
   save('re3_fins',fins);closeOv('ov-fin');renderFin();
 }
 function delFin(){
-  if(!finEid||!confirm('РЈРґР°Р»РёС‚СЊ Р·Р°РїРёСЃСЊ?'))return;
+  if(!finEid||!confirm('Удалить запись?'))return;
   fins=fins.filter(function(x){return x.id!==finEid;});
   save('re3_fins',fins);closeOv('ov-fin');renderFin();
 }
@@ -607,24 +607,24 @@ function delFin(){
 function renderNotes(){
   var root=document.getElementById('notes-root');
   if(notesView==='folders'){
-    root.innerHTML='<div class="section-header"><span class="section-title">Р—Р°РјРµС‚РєРё</span><button class="btn-primary" onclick="openFolderModal()">+ РџР°РїРєР°</button></div><div class="folders-grid" id="folders-grid"></div>';
+    root.innerHTML='<div class="section-header"><span class="section-title">Заметки</span><button class="btn-primary" onclick="openFolderModal()">+ Папка</button></div><div class="folders-grid" id="folders-grid"></div>';
     var fg=document.getElementById('folders-grid');
-    if(!folders.length){fg.innerHTML='<div class="empty-state">РЎРѕР·РґР°Р№ РїРµСЂРІСѓСЋ РїР°РїРєСѓ</div>';return;}
+    if(!folders.length){fg.innerHTML='<div class="empty-state">Создай первую папку</div>';return;}
     folders.forEach(function(f){
       var cnt=notes.filter(function(n){return n.folderId===f.id;}).length;
       var card=document.createElement('div');card.className='folder-card';
-      card.innerHTML='<div class="folder-emoji">рџ“Ѓ</div><div class="folder-name">'+f.name+'</div><div class="folder-count">'+cnt+(cnt===1?' Р·Р°РјРµС‚РєР°':cnt<5?' Р·Р°РјРµС‚РєРё':' Р·Р°РјРµС‚РѕРє')+'</div><button class="folder-del-btn" onclick="delFolder(\''+f.id+'\',event)">вњ•</button>';
+      card.innerHTML='<div class="folder-emoji">📁</div><div class="folder-name">'+f.name+'</div><div class="folder-count">'+cnt+(cnt===1?' заметка':cnt<5?' заметки':' заметок')+'</div><button class="folder-del-btn" onclick="delFolder(\''+f.id+'\',event)">✕</button>';
       card.onclick=function(){openFolder(f.id);};fg.appendChild(card);
     });
   } else {
     var f=folders.find(function(x){return x.id===activeFolderId;});
     var fn=notes.filter(function(n){return n.folderId===activeFolderId;});
-    root.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px"><div><button class="back-link" onclick="goBack()">в†ђ Р’СЃРµ РїР°РїРєРё</button><div class="notes-folder-title">'+(f?f.name:'')+'</div></div><button class="btn-primary" onclick="openNoteModal()">+ Р—Р°РјРµС‚РєР°</button></div><div class="notes-grid" id="notes-grid"></div>';
+    root.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px"><div><button class="back-link" onclick="goBack()">← Все папки</button><div class="notes-folder-title">'+(f?f.name:'')+'</div></div><button class="btn-primary" onclick="openNoteModal()">+ Заметка</button></div><div class="notes-grid" id="notes-grid"></div>';
     var ng=document.getElementById('notes-grid');
-    if(!fn.length){ng.innerHTML='<div class="empty-state">РќРµС‚ Р·Р°РјРµС‚РѕРє</div>';return;}
+    if(!fn.length){ng.innerHTML='<div class="empty-state">Нет заметок</div>';return;}
     fn.forEach(function(n){
       var card=document.createElement('div');card.className='note-card';
-      card.innerHTML='<div class="note-title">'+(n.title||'Р‘РµР· Р·Р°РіРѕР»РѕРІРєР°')+'</div><div class="note-body">'+(n.text||'')+'</div>';
+      card.innerHTML='<div class="note-title">'+(n.title||'Без заголовка')+'</div><div class="note-body">'+(n.text||'')+'</div>';
       card.onclick=function(){openEditNote(n.id);};ng.appendChild(card);
     });
   }
@@ -638,40 +638,40 @@ function saveFolder(){
   save('re3_folders',folders);closeOv('ov-folder');renderNotes();
 }
 function delFolder(id,e){
-  e.stopPropagation();if(!confirm('РЈРґР°Р»РёС‚СЊ РїР°РїРєСѓ Рё РІСЃРµ Р·Р°РјРµС‚РєРё?'))return;
+  e.stopPropagation();if(!confirm('Удалить папку и все заметки?'))return;
   folders=folders.filter(function(f){return f.id!==id;});
   notes=notes.filter(function(n){return n.folderId!==id;});
   save('re3_folders',folders);save('re3_notes2',notes);renderNotes();
 }
 function openNoteModal(){
-  neid=null;document.getElementById('ntit').textContent='РќРѕРІР°СЏ Р·Р°РјРµС‚РєР°';
+  neid=null;document.getElementById('ntit').textContent='Новая заметка';
   document.getElementById('nn-title').value='';document.getElementById('nn-text').value='';
   document.getElementById('ndl').style.display='none';
   document.getElementById('ov-note').classList.add('open');
 }
 function openEditNote(id){
   var n=notes.find(function(x){return x.id===id;});if(!n)return;neid=id;
-  document.getElementById('ntit').textContent='Р РµРґР°РєС‚РёСЂРѕРІР°С‚СЊ Р·Р°РјРµС‚РєСѓ';
+  document.getElementById('ntit').textContent='Редактировать заметку';
   document.getElementById('nn-title').value=n.title||'';document.getElementById('nn-text').value=n.text||'';
   document.getElementById('ndl').style.display='inline-block';
   document.getElementById('ov-note').classList.add('open');
 }
 function saveNote(){
-  var title=document.getElementById('nn-title').value.trim();if(!title){alert('РЈРєР°Р¶Рё Р·Р°РіРѕР»РѕРІРѕРє');return;}
+  var title=document.getElementById('nn-title').value.trim();if(!title){alert('Укажи заголовок');return;}
   var obj={title:title,text:document.getElementById('nn-text').value.trim(),folderId:activeFolderId};
   if(neid){Object.assign(notes.find(function(x){return x.id===neid;}),obj);}
   else{notes.push(Object.assign({id:Date.now().toString()},obj));}
   save('re3_notes2',notes);closeOv('ov-note');renderNotes();
 }
 function delNote(){
-  if(!neid||!confirm('РЈРґР°Р»РёС‚СЊ Р·Р°РјРµС‚РєСѓ?'))return;
+  if(!neid||!confirm('Удалить заметку?'))return;
   notes=notes.filter(function(x){return x.id!==neid;});
   save('re3_notes2',notes);closeOv('ov-note');renderNotes();
 }
 
 function openReleaseModal(ds){
   releid=null;
-  document.getElementById('reltit').textContent='РќРѕРІС‹Р№ СЂРµР»РёР·';
+  document.getElementById('reltit').textContent='Новый релиз';
   document.getElementById('rel-name').value='';
   document.getElementById('rel-date').value=ds||'';
   document.getElementById('rel-link').value='';
@@ -680,7 +680,7 @@ function openReleaseModal(ds){
 }
 function openEditRelease(id){
   var r=releases.find(function(x){return x.id===id;});if(!r)return;releid=id;
-  document.getElementById('reltit').textContent='Р РµРґР°РєС‚РёСЂРѕРІР°С‚СЊ СЂРµР»РёР·';
+  document.getElementById('reltit').textContent='Редактировать релиз';
   document.getElementById('rel-name').value=r.name;
   document.getElementById('rel-date').value=r.date;
   document.getElementById('rel-link').value=r.link||'';
@@ -689,14 +689,14 @@ function openEditRelease(id){
 }
 function saveRelease(){
   var name=document.getElementById('rel-name').value.trim(),date=document.getElementById('rel-date').value;
-  if(!name||!date){alert('РЈРєР°Р¶Рё РЅР°Р·РІР°РЅРёРµ Рё РґР°С‚Сѓ');return;}
+  if(!name||!date){alert('Укажи название и дату');return;}
   var obj={name:name,date:date,link:document.getElementById('rel-link').value.trim()};
   if(releid){Object.assign(releases.find(function(x){return x.id===releid;}),obj);}
   else{releases.push(Object.assign({id:Date.now().toString()},obj));}
   save('re3_releases',releases);closeOv('ov-release');renderCal();
 }
 function delRelease(){
-  if(!releid||!confirm('РЈРґР°Р»РёС‚СЊ СЂРµР»РёР·?'))return;
+  if(!releid||!confirm('Удалить релиз?'))return;
   releases=releases.filter(function(x){return x.id!==releid;});
   save('re3_releases',releases);closeOv('ov-release');renderCal();
 }
@@ -707,7 +707,7 @@ function toggleQr(id){
   if(!box)return;
   var isOpen=box.classList.contains('open');
   box.classList.toggle('open');
-  if(toggle){toggle.textContent=isOpen?'РїРѕРєР°Р·Р°С‚СЊ QR':'СЃРєСЂС‹С‚СЊ QR';}
+  if(toggle){toggle.textContent=isOpen?'показать QR':'скрыть QR';}
 }
 function closeOv(id){document.getElementById(id).classList.remove('open');}
 ['ov-home','ov-daypick','ov-release','ov-reel','ov-fin','ov-folder','ov-note'].forEach(function(id){
