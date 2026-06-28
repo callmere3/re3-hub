@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- RE3 Hub v1.9.0 | 2026-06-28 -->
+<!-- RE3 Hub v1.9.1 | 2026-06-28 -->
 <html lang="ru" data-theme="dark">
 <head>
 <meta charset="UTF-8">
@@ -404,6 +404,10 @@ body{padding-bottom:env(safe-area-inset-bottom)}
   <div class="modal" style="max-width:320px">
     <div class="modal-title">Настройки RE3 Hub</div>
     <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px">Профиль</div>
+      <button class="share-btn" onclick="closeOv('ov-settings');openHomeModal()" style="margin:0;justify-content:flex-start;gap:10px">✏️ Редактировать визитку</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:16px">
       <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px">Уведомления</div>
       <button id="push-enable-btn" class="share-btn" onclick="onPushBtnClick()" style="margin:0;justify-content:flex-start;gap:10px">🔔 Включить уведомления</button>
     </div>
@@ -516,7 +520,6 @@ function renderHome(){
   }
   document.getElementById('home-card').innerHTML=
     '<div class="home-hero">'+
-    '<button class="edit-home-btn" onclick="openHomeModal()">Редактировать</button>'+
     '<div class="home-cover">'+coverHtml+'</div>'+
     '<div class="home-body">'+
     '<div class="home-name">'+(h.name||'RE3')+'</div>'+
