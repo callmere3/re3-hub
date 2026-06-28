@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- RE3 Hub v1.8.0 | 2026-06-28 -->
+<!-- RE3 Hub v1.9.0 | 2026-06-28 -->
 <html lang="ru" data-theme="dark">
 <head>
 <meta charset="UTF-8">
@@ -38,7 +38,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;
 /* NAV */
 .nav{height:calc(52px + env(safe-area-inset-top));display:flex;align-items:center;padding:env(safe-area-inset-top) 16px 0;background:#0e0e0e;border-bottom:1px solid rgba(255,255,255,.07);position:sticky;top:0;z-index:50;gap:2px;overflow-x:auto;-webkit-overflow-scrolling:touch}
 body{padding-bottom:env(safe-area-inset-bottom)}
-.nav-logo{font-size:14px;font-weight:800;color:#fff;margin-right:8px;padding:6px 10px;border-radius:var(--radius);white-space:nowrap;flex-shrink:0;letter-spacing:-.3px}
+.nav-logo{font-size:14px;font-weight:800;color:#fff;margin-right:8px;padding:6px 10px;border-radius:var(--radius);white-space:nowrap;flex-shrink:0;letter-spacing:-.3px;background:none;border:none;font-family:inherit;cursor:pointer;transition:background .15s}
+.nav-logo:hover{background:rgba(255,255,255,.08)}
 .nav-sep{width:1px;height:18px;background:var(--border);margin:0 6px;flex-shrink:0}
 .nav-btn{background:none;border:none;cursor:pointer;font-family:inherit;font-size:13px;color:var(--text2);padding:6px 10px;border-radius:var(--radius);transition:all .15s;font-weight:500;white-space:nowrap;flex-shrink:0}
 .nav-btn:hover{background:var(--bg3);color:var(--text)}
@@ -229,7 +230,7 @@ body{padding-bottom:env(safe-area-inset-bottom)}
 </div>
 
 <nav class="nav">
-  <span class="nav-logo">RE3</span>
+  <button class="nav-logo" onclick="openSettings()">RE3</button>
   <div class="nav-sep"></div>
   <button class="nav-btn active" onclick="showPage('home',this)">Главная</button>
   <button class="nav-btn" onclick="showPage('notes',this)">Заметки</button>
@@ -398,6 +399,20 @@ body{padding-bottom:env(safe-area-inset-bottom)}
   </div>
 </div>
 
+<!-- MODAL: Settings -->
+<div class="ov" id="ov-settings">
+  <div class="modal" style="max-width:320px">
+    <div class="modal-title">Настройки RE3 Hub</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px">Уведомления</div>
+      <button id="push-enable-btn" class="share-btn" onclick="onPushBtnClick()" style="margin:0;justify-content:flex-start;gap:10px">🔔 Включить уведомления</button>
+    </div>
+    <div style="margin-top:18px;padding-top:14px;border-top:1px solid rgba(255,255,255,.07);display:flex;justify-content:flex-end">
+      <button class="btn-ghost" onclick="closeOv('ov-settings')">Закрыть</button>
+    </div>
+  </div>
+</div>
+
 <script>
 var SCRIPT_URL='https://script.google.com/macros/s/AKfycbxWaVLP8OUKgyse3dptdWcncHD4nMKF6MIMtYQguTqfbInNyV2trHD51XuS_RYLACbq/exec';
 var theme='dark';
@@ -509,9 +524,8 @@ function renderHome(){
     (h.bio?'<div class="home-bio">'+(h.bio||'')+'</div>':'')+
     '<div class="social-links">'+links+'</div>'+
     '<button class="share-btn" onclick="shareCard()">Поделиться визиткой</button>'+
-    '<button id="push-enable-btn" class="share-btn" onclick="onPushBtnClick()" style="margin-top:8px">🔔 Включить уведомления</button>'+
     '</div></div>';
-  updatePushBtn(('Notification' in window) ? Notification.permission : 'unsupported');
+  /* кнопка уведомлений убрана — управление через настройки (кнопка RE3 в навбаре) */
 }
 function openHomeModal(){
   var fields=['name','role','bio','ig','tg','ym','photo'];
@@ -1169,7 +1183,10 @@ function shareCard(){
   }
 }
 
-/* ── PUSH NOTIFICATIONS ── */
+function openSettings(){
+  updatePushBtn(('Notification' in window) ? Notification.permission : 'unsupported');
+  document.getElementById('ov-settings').classList.add('open');
+}
 var WORKER_URL='https://re3-push.callmere3.workers.dev';
 var VAPID_PUBLIC_KEY='BGWlzpFR_-YOLsSo4zEo3ycWTrjicSBR4MytRNmR5yPP3lfHyFAFN_ReVhRHo-AEOhqygBX3I7mt2pyMfFQQcWk';
 
@@ -1312,7 +1329,7 @@ document.addEventListener('touchend',function(e){
   var btn=document.querySelectorAll('.nav-btn')[nextPage];
   showPage(pages[nextPage],btn);
 },{passive:true});
-['ov-home','ov-daypick','ov-release','ov-reel','ov-fin','ov-folder','ov-note'].forEach(function(id){
+['ov-home','ov-daypick','ov-release','ov-reel','ov-fin','ov-folder','ov-note','ov-settings'].forEach(function(id){
   document.getElementById(id).onclick=function(e){if(e.target===document.getElementById(id))closeOv(id);};
 });
 
