@@ -721,3 +721,726 @@ loadAll(function(){
 </script>
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RE3 Hub</title>
+<style>
+:root{--bg:#f4f3f0;--bg2:#ffffff;--bg3:#eeeceb;--border:#e4e2df;--border2:#d0cdc9;--text:#111110;--text2:#6b6966;--text3:#9c9996;--accent:#6e5fd4;--accent-bg:#f0eefb;--accent-text:#4a3fa8;--success:#2d8a5e;--success-bg:#eaf6f1;--warning:#c47c1a;--warning-bg:#fef4e4;--danger:#c0392b;--danger-bg:#fdf0ee;--radius:10px;--radius-lg:14px}
+[data-theme="dark"]{--bg:#111110;--bg2:#1c1c1a;--bg3:#252522;--border:#2e2e2a;--border2:#3a3a36;--text:#f0ede8;--text2:#8a8780;--text3:#5a5854;--accent:#8b7ee8;--accent-bg:#1e1b33;--accent-text:#b0a6f0;--success:#3dab78;--success-bg:#0e2219;--warning:#e09333;--warning-bg:#261a08;--danger:#e05c4b;--danger-bg:#280f0c}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* NAV */
+.nav{height:52px;display:flex;align-items:center;padding:0 16px;background:var(--bg2);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50;gap:2px;overflow-x:auto}
+.nav-logo{font-size:14px;font-weight:700;color:var(--text);margin-right:8px;padding:6px 10px;border-radius:var(--radius);background:var(--bg3);white-space:nowrap;flex-shrink:0}
+.nav-sep{width:1px;height:18px;background:var(--border);margin:0 6px;flex-shrink:0}
+.nav-btn{background:none;border:none;cursor:pointer;font-family:inherit;font-size:13px;color:var(--text2);padding:6px 10px;border-radius:var(--radius);transition:all .15s;font-weight:500;white-space:nowrap;flex-shrink:0}
+.nav-btn:hover{background:var(--bg3);color:var(--text)}
+.nav-btn.active{background:var(--accent-bg);color:var(--accent-text);font-weight:600}
+.nav-spacer{flex:1}
+.theme-btn{background:none;border:1px solid var(--border);cursor:pointer;border-radius:var(--radius);width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.theme-btn:hover{background:var(--bg3)}
+
+/* PAGES */
+.page{display:none;padding:20px 16px;max-width:1100px;margin:0 auto}
+.page.active{display:block}
+
+/* ===== HOME ===== */
+.home-hero{background:#0e0e0e;border-radius:20px;max-width:420px;overflow:hidden;position:relative;box-shadow:0 24px 64px rgba(0,0,0,.18)}
+.home-cover{width:100%;height:220px;background:linear-gradient(160deg,#1a1230 0%,#0e0e0e 100%);position:relative;overflow:hidden}
+.home-cover-img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
+.home-cover-gradient{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(14,14,14,0) 30%,rgba(14,14,14,.85) 80%,rgba(14,14,14,1) 100%)}
+.home-cover-initials{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:52px;font-weight:800;color:rgba(255,255,255,.08);letter-spacing:-2px}
+.home-body{padding:0 24px 28px;margin-top:-32px;position:relative}
+.home-name{font-size:26px;font-weight:800;color:#fff;letter-spacing:-.6px;margin-bottom:4px;line-height:1.1}
+.home-role{font-size:11px;color:rgba(255,255,255,.45);font-weight:500;letter-spacing:.6px;text-transform:uppercase;margin-bottom:14px}
+.home-role-wrap{display:none}
+.home-bio{font-size:12px;color:rgba(255,255,255,.4);line-height:1.6;margin-bottom:22px;border-top:1px solid rgba(255,255,255,.07);padding-top:16px}
+.social-links{display:flex;flex-direction:column;gap:16px}
+.social-block{display:flex;flex-direction:column;gap:10px}
+.social-link{display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;color:rgba(255,255,255,.5);text-decoration:none;transition:color .2s;font-weight:400;padding:0;background:none;border:none;letter-spacing:.2px}
+.social-link:hover{color:#fff}
+.social-icon{display:none}
+.qr-box{width:100%;max-height:0;overflow:hidden;transition:max-height .35s ease,opacity .3s ease;opacity:0;display:flex;justify-content:center}
+.qr-box.open{max-height:200px;opacity:1}
+.qr-box img{width:140px;height:140px;object-fit:cover;border-radius:10px;margin:8px 0}
+.qr-box-empty{font-size:9px;color:rgba(255,255,255,.2);text-align:center;padding:8px;line-height:1.5}
+.qr-toggle{font-size:10px;color:rgba(255,255,255,.25);letter-spacing:.4px;text-transform:uppercase;cursor:pointer;transition:color .2s;text-align:center;margin-top:2px;user-select:none}
+.qr-toggle:hover{color:rgba(255,255,255,.5)}
+.edit-home-btn{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:5px 12px;cursor:pointer;font-size:11px;color:rgba(255,255,255,.5);font-family:inherit;transition:all .2s;z-index:2}
+.edit-home-btn:hover{background:rgba(255,255,255,.14);color:#fff}
+[data-theme="light"] .home-hero{box-shadow:0 24px 64px rgba(0,0,0,.12)}
+
+/* SHARED */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.section-title{font-size:17px;font-weight:700;color:var(--text);letter-spacing:-.3px}
+.btn-primary{background:var(--accent);color:#fff;border:none;border-radius:var(--radius);padding:8px 16px;cursor:pointer;font-size:12px;font-family:inherit;font-weight:600;transition:opacity .15s;white-space:nowrap}
+.btn-primary:hover{opacity:.85}
+.btn-ghost{background:none;border:1px solid var(--border);border-radius:var(--radius);padding:7px 14px;cursor:pointer;font-size:12px;color:var(--text2);font-family:inherit;transition:all .15s}
+.btn-ghost:hover{background:var(--bg3);color:var(--text)}
+.btn-danger{background:none;border:1px solid var(--danger);border-radius:var(--radius);padding:7px 12px;cursor:pointer;font-size:12px;color:var(--danger);font-family:inherit}
+.btn-danger:hover{background:var(--danger-bg)}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px}
+.clabel{font-size:10px;font-weight:700;color:var(--text3);margin-bottom:12px;text-transform:uppercase;letter-spacing:.7px}
+.empty-state{text-align:center;padding:28px 0;color:var(--text3);font-size:13px}
+
+/* ===== CALENDAR ===== */
+.cal-nav-row{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.cal-nav-btn{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);width:32px;height:32px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;color:var(--text2);flex-shrink:0}
+.cal-nav-btn:hover{background:var(--bg3)}
+.cal-month{font-size:16px;font-weight:700;flex:1;color:var(--text)}
+.wds{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:2px}
+.wd{font-size:9px;color:var(--text3);text-align:center;padding:3px 0;font-weight:700;text-transform:uppercase}
+.cgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.day{min-height:70px;border-radius:8px;border:1px solid var(--border);padding:4px;background:var(--bg2);cursor:pointer;transition:border-color .12s}
+.day:hover{border-color:var(--border2)}
+.day.other{background:var(--bg);opacity:.5;cursor:default}
+.dnum{font-size:10px;font-weight:600;color:var(--text3);width:20px;height:20px;display:flex;align-items:center;justify-content:center;margin-bottom:2px;border-radius:50%}
+.day.today .dnum{background:var(--accent);color:#fff}
+.chip{border-radius:4px;padding:2px 4px;font-size:9px;font-weight:600;margin-bottom:2px;cursor:pointer;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;display:block;line-height:1.5}
+.s-idea{background:var(--accent-bg);color:var(--accent-text)}
+.s-ready{background:var(--warning-bg);color:var(--warning)}
+.s-pub{background:var(--success-bg);color:var(--success)}
+.s-release{background:#fce7f3;color:#9d174d}
+[data-theme="dark"] .s-release{background:#2d0a1e;color:#f472b6}
+.cal-bottom{display:flex;flex-direction:column;gap:12px;margin-top:16px}
+.stat-grid{display:flex;gap:8px}
+.stat{flex:1;background:var(--bg3);border-radius:var(--radius);padding:10px;text-align:center}
+.stat-n{font-size:20px;font-weight:700;color:var(--text);line-height:1}
+.stat-l{font-size:10px;color:var(--text3);margin-top:3px}
+.leg-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);padding:2px 0}
+.day-pick{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+.day-pick-btn{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg3);cursor:pointer;font-family:inherit;font-size:13px;color:var(--text);font-weight:500;transition:all .15s;text-align:left}
+.day-pick-btn:hover{border-color:var(--border2);background:var(--bg2)}
+.day-pick-icon{font-size:20px;flex-shrink:0}
+.leg-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+
+/* ===== FINANCE ===== */
+.balance-banner{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;margin-bottom:20px}
+.bl{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.bv{font-size:28px;font-weight:700;color:var(--text);letter-spacing:-.6px;margin-bottom:14px}
+.balance-pills{display:flex;gap:8px}
+.bpill{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;flex:1}
+.bpill-l{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.bpill-v{font-size:16px;font-weight:700}
+.inc-color{color:var(--success)}
+.exp-color{color:var(--danger)}
+.fin-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:600px){.fin-cols{grid-template-columns:1fr}}
+.fin-col-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.fin-col-title{font-size:14px;font-weight:700;color:var(--text)}
+.fin-list{display:flex;flex-direction:column;gap:6px}
+.fin-row{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;display:flex;align-items:center;gap:10px;cursor:pointer}
+.fin-row:hover{border-color:var(--border2)}
+.fin-row-body{flex:1;min-width:0}
+.fin-row-name{font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fin-row-desc{font-size:11px;color:var(--text3);margin-top:1px}
+.fin-row-right{text-align:right;flex-shrink:0}
+.fin-amount{font-size:13px;font-weight:700}
+.badge{font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;margin-top:3px;display:inline-block}
+.badge-paid{background:var(--success-bg);color:var(--success)}
+.badge-pending{background:var(--warning-bg);color:var(--warning)}
+
+/* ===== NOTES ===== */
+.folders-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.folder-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;cursor:pointer;transition:all .15s;position:relative}
+.folder-card:hover{border-color:var(--accent);background:var(--accent-bg)}
+.folder-emoji{font-size:22px;margin-bottom:8px}
+.folder-name{font-size:13px;font-weight:700;color:var(--text);margin-bottom:3px}
+.folder-count{font-size:11px;color:var(--text3)}
+.folder-del-btn{position:absolute;top:8px;right:8px;background:none;border:none;cursor:pointer;color:var(--text3);font-size:13px;display:none;padding:2px 5px;border-radius:5px}
+.folder-card:hover .folder-del-btn{display:block}
+.folder-del-btn:hover{color:var(--danger);background:var(--danger-bg)}
+.notes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
+.note-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px;cursor:pointer}
+.note-card:hover{border-color:var(--border2)}
+.note-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:5px}
+.note-body{font-size:12px;color:var(--text2);line-height:1.55;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.back-link{background:none;border:none;cursor:pointer;font-family:inherit;font-size:13px;color:var(--text2);padding:0;display:flex;align-items:center;gap:5px;margin-bottom:14px}
+.back-link:hover{color:var(--text)}
+.notes-folder-title{font-size:17px;font-weight:700;color:var(--text)}
+
+/* ===== MODALS ===== */
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center;padding:16px}
+.ov.open{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px;width:100%;max-width:380px;max-height:90vh;overflow-y:auto}
+.modal.wide{max-width:500px}
+.modal-title{font-size:16px;font-weight:700;color:var(--text);margin-bottom:18px}
+.fl{margin-bottom:13px}
+.fl label{display:block;font-size:11px;color:var(--text3);margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.fl input,.fl select,.fl textarea{width:100%;font-family:inherit;font-size:13px;padding:9px 11px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg3);color:var(--text);outline:none}
+.fl input:focus,.fl select:focus,.fl textarea:focus{border-color:var(--accent);background:var(--bg2)}
+.fl textarea{min-height:100px;resize:vertical;line-height:1.65}
+.fl-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.macts{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid var(--border)}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <span class="nav-logo">RE3</span>
+  <div class="nav-sep"></div>
+  <button class="nav-btn active" onclick="showPage('home',this)">Главная</button>
+  <button class="nav-btn" onclick="showPage('notes',this)">Заметки</button>
+  <button class="nav-btn" onclick="showPage('calendar',this)">Календарь</button>
+  <button class="nav-btn" onclick="showPage('finance',this)">Финансы</button>
+  <div class="nav-spacer"></div>
+  <button class="theme-btn" onclick="toggleTheme()" id="theme-btn">🌙</button>
+</nav>
+<div id="loading-bar" style="display:none;position:fixed;top:52px;left:0;right:0;z-index:49;background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 16px;align-items:center;gap:10px;font-size:13px;color:var(--text2)">
+  <div style="width:18px;height:18px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0"></div>
+  Загрузка данных...
+</div>
+<div id="sync-status" style="position:fixed;bottom:16px;right:16px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:6px 12px;font-size:12px;color:var(--text2);opacity:0;transition:opacity .3s;z-index:49;pointer-events:none"></div>
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+
+<!-- HOME -->
+<div class="page active" id="page-home"><div id="home-card"></div></div>
+
+<!-- NOTES -->
+<div class="page" id="page-notes"><div id="notes-root"></div></div>
+
+<!-- CALENDAR -->
+<div class="page" id="page-calendar">
+  <div class="cal-nav-row">
+    <button class="cal-nav-btn" onclick="pm()">&#8249;</button>
+    <span class="cal-month" id="mtitle"></span>
+    <button class="cal-nav-btn" onclick="nm()">&#8250;</button>
+    <button class="btn-primary" onclick="openReelModal()">+ Рилс</button>
+    <button class="btn-ghost" onclick="openReleaseModal()" style="border-color:#f9a8d4;color:#9d174d">+ Релиз</button>
+  </div>
+  <div class="wds"><div class="wd">Пн</div><div class="wd">Вт</div><div class="wd">Ср</div><div class="wd">Чт</div><div class="wd">Пт</div><div class="wd">Сб</div><div class="wd">Вс</div></div>
+  <div class="cgrid" id="cgrid"></div>
+  <div class="cal-bottom">
+    <div class="card"><div class="clabel">Этот месяц</div><div class="stat-grid" id="cal-stats"></div></div>
+    <div class="card">
+      <div class="clabel">Статусы</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div class="leg-row"><div class="leg-dot" style="background:var(--accent-bg);border:1px solid var(--accent)"></div><span>Идея</span></div>
+        <div class="leg-row"><div class="leg-dot" style="background:var(--warning-bg);border:1px solid var(--warning)"></div><span>Готов</span></div>
+        <div class="leg-row"><div class="leg-dot" style="background:var(--success-bg);border:1px solid var(--success)"></div><span>Опубликован</span></div>
+        <div class="leg-row"><div class="leg-dot" style="background:#fce7f3;border:1px solid #f9a8d4"></div><span>Релиз трека</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FINANCE -->
+<div class="page" id="page-finance">
+  <div id="balance-banner"></div>
+  <div class="fin-cols">
+    <div>
+      <div class="fin-col-header"><span class="fin-col-title">Доходы</span><button class="btn-primary" onclick="openFinModal('income')">+ Доход</button></div>
+      <div class="fin-list" id="income-list"></div>
+    </div>
+    <div>
+      <div class="fin-col-header"><span class="fin-col-title">Расходы</span><button class="btn-primary" onclick="openFinModal('expense')">+ Расход</button></div>
+      <div class="fin-list" id="expense-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Home -->
+<div class="ov" id="ov-home">
+  <div class="modal">
+    <div class="modal-title">Редактировать визитку</div>
+    <div class="fl"><label>Имя</label><input id="h-name" type="text" placeholder="RE3"></div>
+    <div class="fl"><label>Роль</label><input id="h-role" type="text" placeholder="Music Producer · Electronic · Phonk"></div>
+    <div class="fl"><label>Bio</label><textarea id="h-bio" style="min-height:70px" placeholder="Credits: H1GH, Legovich..."></textarea></div>
+    <div class="fl"><label>Фото URL</label><input id="h-photo" type="text" placeholder="https://...jpg"></div>
+    <div class="fl"><label>Instagram URL</label><input id="h-ig" type="text" placeholder="https://instagram.com/re3_music"></div>
+    <div class="fl"><label>Instagram QR URL</label><input id="h-ig-qr" type="text" placeholder="https://...jpg"></div>
+    <div class="fl"><label>Telegram URL</label><input id="h-tg" type="text" placeholder="https://t.me/re3_music"></div>
+    <div class="fl"><label>Telegram QR URL</label><input id="h-tg-qr" type="text" placeholder="https://...jpg"></div>
+    <div class="fl"><label>Яндекс Музыка URL</label><input id="h-ym" type="text" placeholder="https://music.yandex.ru/..."></div>
+    <div class="macts">
+      <button class="btn-ghost" onclick="closeOv('ov-home')">Отмена</button>
+      <button class="btn-primary" onclick="saveHome()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Day picker -->
+<div class="ov" id="ov-daypick">
+  <div class="modal">
+    <div class="modal-title" id="daypick-title">Добавить на день</div>
+    <div class="day-pick">
+      <button class="day-pick-btn" onclick="pickReel()"><span class="day-pick-icon">🎬</span><div><div>Рилс</div><div style="font-size:11px;color:var(--text3);font-weight:400;margin-top:2px">Запланировать публикацию</div></div></button>
+      <button class="day-pick-btn" onclick="pickRelease()"><span class="day-pick-icon">🎵</span><div><div>Релиз трека</div><div style="font-size:11px;color:var(--text3);font-weight:400;margin-top:2px">Отметить дату выхода</div></div></button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Release -->
+<div class="ov" id="ov-release">
+  <div class="modal">
+    <div class="modal-title" id="reltit">Новый релиз</div>
+    <div class="fl"><label>Название трека</label><input id="rel-name" type="text" placeholder="Turn it up!"></div>
+    <div class="fl"><label>Дата релиза</label><input id="rel-date" type="date"></div>
+    <div class="fl"><label>Платформа / ссылка (необязательно)</label><input id="rel-link" type="text" placeholder="https://music.yandex.ru/..."></div>
+    <div class="macts">
+      <button class="btn-danger" id="reldl" onclick="delRelease()" style="display:none">Удалить</button>
+      <button class="btn-ghost" onclick="closeOv('ov-release')">Отмена</button>
+      <button class="btn-primary" onclick="saveRelease()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Reel -->
+<div class="ov" id="ov-reel">
+  <div class="modal">
+    <div class="modal-title" id="rtit">Новый рилс</div>
+    <div class="fl"><label>Название</label><input id="rn" type="text" placeholder="DAW breakdown — Turn it up!"></div>
+    <div class="fl-row">
+      <div class="fl"><label>Дата</label><input id="rd" type="date"></div>
+      <div class="fl"><label>Статус</label>
+        <select id="rs"><option value="idea">Идея</option><option value="ready">Готов</option><option value="pub">Опубликован</option></select>
+      </div>
+    </div>
+    <div class="fl"><label>Caption / хэштеги</label><textarea id="rc" placeholder="Every layer that makes this groove work #nudisco"></textarea></div>
+    <div class="macts">
+      <button class="btn-danger" id="rdl" onclick="delReel()" style="display:none">Удалить</button>
+      <button class="btn-ghost" onclick="closeOv('ov-reel')">Отмена</button>
+      <button class="btn-primary" onclick="saveReel()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Finance -->
+<div class="ov" id="ov-fin">
+  <div class="modal">
+    <div class="modal-title" id="ftit">Новый доход</div>
+    <div class="fl"><label>Название</label><input id="fn-name" type="text" placeholder="Битселл — Jakone"></div>
+    <div class="fl-row">
+      <div class="fl"><label>Сумма (₽)</label><input id="fn-amount" type="number" placeholder="15000"></div>
+      <div class="fl" id="fn-status-wrap"><label>Статус</label>
+        <select id="fn-status"><option value="paid">Выплачено</option><option value="pending">Ожидает</option></select>
+      </div>
+    </div>
+    <div class="fl"><label>Описание</label><input id="fn-desc" type="text" placeholder="Эксклюзив, роялти..."></div>
+    <div class="macts">
+      <button class="btn-danger" id="fdl" onclick="delFin()" style="display:none">Удалить</button>
+      <button class="btn-ghost" onclick="closeOv('ov-fin')">Отмена</button>
+      <button class="btn-primary" onclick="saveFin()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Folder -->
+<div class="ov" id="ov-folder">
+  <div class="modal">
+    <div class="modal-title">Новая папка</div>
+    <div class="fl"><label>Название</label><input id="fold-name" type="text" placeholder="Хуки, Идеи, Тексты..."></div>
+    <div class="macts">
+      <button class="btn-ghost" onclick="closeOv('ov-folder')">Отмена</button>
+      <button class="btn-primary" onclick="saveFolder()">Создать</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Note -->
+<div class="ov" id="ov-note">
+  <div class="modal wide">
+    <div class="modal-title" id="ntit">Новая заметка</div>
+    <div class="fl"><label>Заголовок</label><input id="nn-title" type="text" placeholder="Хуки для Turn it up!"></div>
+    <div class="fl"><label>Текст</label><textarea id="nn-text" style="min-height:200px" placeholder="Запиши идею..."></textarea></div>
+    <div class="macts">
+      <button class="btn-danger" id="ndl" onclick="delNote()" style="display:none">Удалить</button>
+      <button class="btn-ghost" onclick="closeOv('ov-note')">Отмена</button>
+      <button class="btn-primary" onclick="saveNote()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var SCRIPT_URL='https://script.google.com/macros/s/AKfycbxWaVLP8OUKgyse3dptdWcncHD4nMKF6MIMtYQguTqfbInNyV2trHD51XuS_RYLACbq/exec';
+var theme=localStorage.getItem('re3_theme')||'light';
+var home={"name":"RE3","role":"Music Producer · Mixing engineer · Artist","bio":"Credits: Люся Чеботина, Jakone, TATAR, mzlff, СТС, ТНТ","ig":"https://instagram.com/re3_music","tg":"https://t.me/re3_music","ym":"","photo":"","ig-qr":"","tg-qr":""};
+var reels=[],fins=[],folders=[],notes=[],releases=[];
+var cur=new Date(); cur.setDate(1);
+var releid=null,pickedDate='',reid=null,finEid=null,finType='income',neid=null;
+var notesView='folders',activeFolderId=null;
+
+function showSyncing(){var el=document.getElementById('sync-status');if(el){el.textContent='Сохранение...';el.style.opacity='1';}}
+function hideSyncing(){var el=document.getElementById('sync-status');if(el){el.textContent='Сохранено ✓';setTimeout(function(){el.style.opacity='0';},1500);}}
+function showLoading(show){var el=document.getElementById('loading-bar');if(el){el.style.display=show?'flex':'none';}}
+
+function gsGet(key,cb){
+  fetch(SCRIPT_URL+'?key='+key)
+    .then(function(r){return r.text();})
+    .then(function(t){try{cb(JSON.parse(t));}catch(e){cb(null);}})
+    .catch(function(){cb(null);});
+}
+
+function gsSave(key,val){
+  showSyncing();
+  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({key:key,value:JSON.stringify(val)})})
+    .then(function(){hideSyncing();})
+    .catch(function(){hideSyncing();});
+}
+
+function save(k,v){localStorage.setItem(k,JSON.stringify(v));gsSave(k,v);}
+
+function loadAll(cb){
+  showLoading(true);
+  var keys=['re3_home','re3_reels','re3_fins','re3_folders','re3_notes2','re3_releases'];
+  var done=0;
+  keys.forEach(function(k){
+    gsGet(k,function(val){
+      var data=val;
+      if(data===null){
+        var loc=localStorage.getItem(k);
+        try{data=loc?JSON.parse(loc):null;}catch(e){data=null;}
+      }
+      if(data!==null){
+        if(k==='re3_home') home=data;
+        else if(k==='re3_reels') reels=data;
+        else if(k==='re3_fins') fins=data;
+        else if(k==='re3_folders') folders=data;
+        else if(k==='re3_notes2') notes=data;
+        else if(k==='re3_releases') releases=data;
+      }
+      done++;
+      if(done===keys.length){showLoading(false);if(cb)cb();}
+    });
+  });
+}
+
+function applyTheme(){
+  document.documentElement.setAttribute('data-theme',theme);
+  document.getElementById('theme-btn').textContent=theme==='dark'?'☀️':'🌙';
+}
+function toggleTheme(){
+  theme=theme==='light'?'dark':'light';
+  localStorage.setItem('re3_theme',theme);
+  applyTheme();
+}
+applyTheme();
+
+function showPage(id,btn){
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active');});
+  document.getElementById('page-'+id).classList.add('active');
+  btn.classList.add('active');
+  if(id==='calendar') renderCal();
+  if(id==='finance') renderFin();
+  if(id==='notes') renderNotes();
+}
+
+/* HOME */
+function renderHome(){
+  var h=home;
+  var initials=(h.name||'RE3').toUpperCase();
+  var coverHtml=h.photo
+    ?'<img class="home-cover-img" src="'+h.photo+'" alt=""><div class="home-cover-gradient"></div>'
+    :'<div class="home-cover-initials">'+initials+'</div>';
+  var links='';
+  if(h.ig){
+    var igQrContent=h['ig-qr']?'<img src="'+h['ig-qr']+'" alt="IG QR">':'<div class="qr-box-empty">Добавь QR в редакторе</div>';
+    links+='<div class="social-block"><a class="social-link" href="'+h.ig+'" target="_blank">'+h.ig.replace(/https?:\/\/(www\.)?/,'')+'</a></div>';
+    links+='<div class="qr-box" id="qr-ig">'+igQrContent+'</div>';
+  }
+  if(h.tg){
+    var tgQrContent=h['tg-qr']?'<img src="'+h['tg-qr']+'" alt="TG QR">':'<div class="qr-box-empty">Добавь QR в редакторе</div>';
+    links+='<div class="social-block"><a class="social-link" href="'+h.tg+'" target="_blank">'+h.tg.replace(/https?:\/\//,'')+'</a></div>';
+    links+='<div class="qr-box" id="qr-tg">'+tgQrContent+'</div>';
+  }
+  if(h.ym) links+='<a class="social-link" href="'+h.ym+'" target="_blank"><div class="social-icon">ЯМ</div>Яндекс Музыка</a>';
+  document.getElementById('home-card').innerHTML=
+    '<div class="home-hero">'+
+    '<button class="edit-home-btn" onclick="openHomeModal()">Редактировать</button>'+
+    '<div class="home-cover">'+coverHtml+'</div>'+
+    '<div class="home-body">'+
+    '<div class="home-name">'+(h.name||'RE3')+'</div>'+
+    '<div class="home-role">'+(h.role||'')+'</div>'+
+    (h.bio?'<div class="home-bio">'+(h.bio||'')+'</div>':'')+
+    '<div class="social-links">'+links+'</div>'+
+    '</div></div>';
+}
+function openHomeModal(){
+  var fields=['name','role','bio','ig','tg','ym','photo'];
+  fields.forEach(function(k){document.getElementById('h-'+k).value=home[k]||'';});
+  document.getElementById('h-ig-qr').value=home['ig-qr']||'';
+  document.getElementById('h-tg-qr').value=home['tg-qr']||'';
+  document.getElementById('ov-home').classList.add('open');
+}
+function saveHome(){
+  home={
+    name:document.getElementById('h-name').value.trim(),
+    role:document.getElementById('h-role').value.trim(),
+    bio:document.getElementById('h-bio').value.trim(),
+    ig:document.getElementById('h-ig').value.trim(),
+    tg:document.getElementById('h-tg').value.trim(),
+    ym:document.getElementById('h-ym').value.trim(),
+    photo:document.getElementById('h-photo').value.trim(),
+    'ig-qr':document.getElementById('h-ig-qr').value.trim(),
+    'tg-qr':document.getElementById('h-tg-qr').value.trim()
+  };
+  save('re3_home',home);closeOv('ov-home');renderHome();
+}
+
+/* CALENDAR */
+var MN=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+function renderCal(){
+  var y=cur.getFullYear(),m=cur.getMonth();
+  document.getElementById('mtitle').textContent=MN[m]+' '+y;
+  var dow=new Date(y,m,1).getDay();if(!dow)dow=7;
+  var days=new Date(y,m+1,0).getDate(),td=new Date();
+  var g=document.getElementById('cgrid');g.innerHTML='';
+  for(var i=1;i<dow;i++){var dd=document.createElement('div');dd.className='day other';g.appendChild(dd);}
+  for(var d=1;d<=days;d++){
+    var c=document.createElement('div');
+    var it=td.getFullYear()===y&&td.getMonth()===m&&td.getDate()===d;
+    c.className='day'+(it?' today':'');
+    var n=document.createElement('div');n.className='dnum';n.textContent=d;c.appendChild(n);
+    var ds=y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    (function(ds,c){
+      reels.filter(function(r){return r.date===ds;}).forEach(function(r){
+        var ch=document.createElement('span');ch.className='chip s-'+r.status;ch.textContent=r.name||'Без названия';
+        ch.onclick=function(e){e.stopPropagation();openEditReel(r.id);};c.appendChild(ch);
+      });
+      releases.filter(function(r){return r.date===ds;}).forEach(function(r){
+        var ch=document.createElement('span');ch.className='chip s-release';ch.textContent='🎵 '+r.name;
+        ch.onclick=function(e){e.stopPropagation();openEditRelease(r.id);};c.appendChild(ch);
+      });
+      c.onclick=function(){openDayPick(ds)};
+    })(ds,c);
+    g.appendChild(c);
+  }
+  var pfx=y+'-'+String(m+1).padStart(2,'0');
+  var ms=reels.filter(function(r){return r.date.startsWith(pfx);});
+  document.getElementById('cal-stats').innerHTML=
+    '<div class="stat"><div class="stat-n">'+ms.filter(function(r){return r.status==='idea';}).length+'</div><div class="stat-l">Идей</div></div>'+
+    '<div class="stat"><div class="stat-n">'+ms.filter(function(r){return r.status==='ready';}).length+'</div><div class="stat-l">Готово</div></div>'+
+    '<div class="stat"><div class="stat-n">'+ms.filter(function(r){return r.status==='pub';}).length+'</div><div class="stat-l">Опубл.</div></div>';
+}
+function pm(){cur.setMonth(cur.getMonth()-1);renderCal();}
+function nm(){cur.setMonth(cur.getMonth()+1);renderCal();}
+function openDayPick(ds){
+  pickedDate=ds;
+  var parts=ds.split('-');
+  var months=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+  var label=parseInt(parts[2])+' '+months[parseInt(parts[1])-1];
+  document.getElementById('daypick-title').textContent=label;
+  document.getElementById('ov-daypick').classList.add('open');
+}
+function pickReel(){
+  closeOv('ov-daypick');
+  openReelModal(pickedDate);
+}
+function pickRelease(){
+  closeOv('ov-daypick');
+  openReleaseModal(pickedDate);
+}
+function openReelModal(ds){
+  reid=null;
+  document.getElementById('rtit').textContent='Новый рилс';
+  document.getElementById('rn').value='';document.getElementById('rd').value=ds||'';
+  document.getElementById('rs').value='idea';document.getElementById('rc').value='';
+  document.getElementById('rdl').style.display='none';
+  document.getElementById('ov-reel').classList.add('open');
+}
+function openEditReel(id){
+  var r=reels.find(function(x){return x.id===id;});if(!r)return;reid=id;
+  document.getElementById('rtit').textContent='Редактировать рилс';
+  document.getElementById('rn').value=r.name;document.getElementById('rd').value=r.date;
+  document.getElementById('rs').value=r.status;document.getElementById('rc').value=r.desc||'';
+  document.getElementById('rdl').style.display='inline-block';
+  document.getElementById('ov-reel').classList.add('open');
+}
+function saveReel(){
+  var name=document.getElementById('rn').value.trim(),date=document.getElementById('rd').value;
+  if(!name||!date){alert('Укажи название и дату');return;}
+  var obj={name:name,date:date,status:document.getElementById('rs').value,desc:document.getElementById('rc').value.trim()};
+  if(reid){Object.assign(reels.find(function(x){return x.id===reid;}),obj);}
+  else{reels.push(Object.assign({id:Date.now().toString()},obj));}
+  save('re3_reels',reels);closeOv('ov-reel');renderCal();
+}
+function delReel(){
+  if(!reid||!confirm('Удалить рилс?'))return;
+  reels=reels.filter(function(x){return x.id!==reid;});
+  save('re3_reels',reels);closeOv('ov-reel');renderCal();
+}
+
+/* FINANCE */
+function renderFin(){
+  var inc=fins.filter(function(f){return f.type==='income';}),exp=fins.filter(function(f){return f.type==='expense';});
+  var ti=inc.reduce(function(s,f){return s+f.amount;},0),te=exp.reduce(function(s,f){return s+f.amount;},0);
+  function fmt(n){return n.toLocaleString('ru-RU')+'₽';}
+  document.getElementById('balance-banner').innerHTML=
+    '<div class="balance-banner">'+
+    '<div class="bl">Баланс</div><div class="bv">'+fmt(ti-te)+'</div>'+
+    '<div class="balance-pills">'+
+    '<div class="bpill"><div class="bpill-l">Доходы</div><div class="bpill-v inc-color">+'+fmt(ti)+'</div></div>'+
+    '<div class="bpill"><div class="bpill-l">Расходы</div><div class="bpill-v exp-color">−'+fmt(te)+'</div></div>'+
+    '</div></div>';
+  var il=document.getElementById('income-list');
+  il.innerHTML=inc.length?'':'<div class="empty-state">Нет доходов</div>';
+  inc.forEach(function(f){
+    var r=document.createElement('div');r.className='fin-row';
+    r.innerHTML='<div class="fin-row-body"><div class="fin-row-name">'+f.name+'</div>'+(f.desc?'<div class="fin-row-desc">'+f.desc+'</div>':'')+'</div>'+
+      '<div class="fin-row-right"><div class="fin-amount inc-color">+'+f.amount.toLocaleString('ru-RU')+'₽</div>'+
+      '<span class="badge '+(f.status==='paid'?'badge-paid':'badge-pending')+'">'+(f.status==='paid'?'Выплачено':'Ожидает')+'</span></div>';
+    r.onclick=function(){openEditFin(f.id);};il.appendChild(r);
+  });
+  var el=document.getElementById('expense-list');
+  el.innerHTML=exp.length?'':'<div class="empty-state">Нет расходов</div>';
+  exp.forEach(function(f){
+    var r=document.createElement('div');r.className='fin-row';
+    r.innerHTML='<div class="fin-row-body"><div class="fin-row-name">'+f.name+'</div>'+(f.desc?'<div class="fin-row-desc">'+f.desc+'</div>':'')+'</div>'+
+      '<div class="fin-row-right"><div class="fin-amount exp-color">−'+f.amount.toLocaleString('ru-RU')+'₽</div></div>';
+    r.onclick=function(){openEditFin(f.id);};el.appendChild(r);
+  });
+}
+function openFinModal(type){
+  finType=type;finEid=null;
+  document.getElementById('ftit').textContent=type==='income'?'Новый доход':'Новый расход';
+  document.getElementById('fn-name').value='';document.getElementById('fn-amount').value='';
+  document.getElementById('fn-desc').value='';document.getElementById('fn-status').value='paid';
+  document.getElementById('fn-status-wrap').style.display=type==='income'?'block':'none';
+  document.getElementById('fdl').style.display='none';
+  document.getElementById('ov-fin').classList.add('open');
+}
+function openEditFin(id){
+  var f=fins.find(function(x){return x.id===id;});if(!f)return;finEid=id;finType=f.type;
+  document.getElementById('ftit').textContent=f.type==='income'?'Редактировать доход':'Редактировать расход';
+  document.getElementById('fn-name').value=f.name;document.getElementById('fn-amount').value=f.amount;
+  document.getElementById('fn-desc').value=f.desc||'';document.getElementById('fn-status').value=f.status||'paid';
+  document.getElementById('fn-status-wrap').style.display=f.type==='income'?'block':'none';
+  document.getElementById('fdl').style.display='inline-block';
+  document.getElementById('ov-fin').classList.add('open');
+}
+function saveFin(){
+  var name=document.getElementById('fn-name').value.trim(),amount=parseFloat(document.getElementById('fn-amount').value);
+  if(!name||!amount){alert('Укажи название и сумму');return;}
+  var obj={name:name,amount:amount,type:finType,desc:document.getElementById('fn-desc').value.trim(),status:finType==='income'?document.getElementById('fn-status').value:'expense'};
+  if(finEid){Object.assign(fins.find(function(x){return x.id===finEid;}),obj);}
+  else{fins.push(Object.assign({id:Date.now().toString()},obj));}
+  save('re3_fins',fins);closeOv('ov-fin');renderFin();
+}
+function delFin(){
+  if(!finEid||!confirm('Удалить запись?'))return;
+  fins=fins.filter(function(x){return x.id!==finEid;});
+  save('re3_fins',fins);closeOv('ov-fin');renderFin();
+}
+
+/* NOTES */
+function renderNotes(){
+  var root=document.getElementById('notes-root');
+  if(notesView==='folders'){
+    root.innerHTML='<div class="section-header"><span class="section-title">Заметки</span><button class="btn-primary" onclick="openFolderModal()">+ Папка</button></div><div class="folders-grid" id="folders-grid"></div>';
+    var fg=document.getElementById('folders-grid');
+    if(!folders.length){fg.innerHTML='<div class="empty-state">Создай первую папку</div>';return;}
+    folders.forEach(function(f){
+      var cnt=notes.filter(function(n){return n.folderId===f.id;}).length;
+      var card=document.createElement('div');card.className='folder-card';
+      card.innerHTML='<div class="folder-emoji">📁</div><div class="folder-name">'+f.name+'</div><div class="folder-count">'+cnt+(cnt===1?' заметка':cnt<5?' заметки':' заметок')+'</div><button class="folder-del-btn" onclick="delFolder(\''+f.id+'\',event)">✕</button>';
+      card.onclick=function(){openFolder(f.id);};fg.appendChild(card);
+    });
+  } else {
+    var f=folders.find(function(x){return x.id===activeFolderId;});
+    var fn=notes.filter(function(n){return n.folderId===activeFolderId;});
+    root.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px"><div><button class="back-link" onclick="goBack()">← Все папки</button><div class="notes-folder-title">'+(f?f.name:'')+'</div></div><button class="btn-primary" onclick="openNoteModal()">+ Заметка</button></div><div class="notes-grid" id="notes-grid"></div>';
+    var ng=document.getElementById('notes-grid');
+    if(!fn.length){ng.innerHTML='<div class="empty-state">Нет заметок</div>';return;}
+    fn.forEach(function(n){
+      var card=document.createElement('div');card.className='note-card';
+      card.innerHTML='<div class="note-title">'+(n.title||'Без заголовка')+'</div><div class="note-body">'+(n.text||'')+'</div>';
+      card.onclick=function(){openEditNote(n.id);};ng.appendChild(card);
+    });
+  }
+}
+function openFolder(id){activeFolderId=id;notesView='notes';renderNotes();}
+function goBack(){notesView='folders';activeFolderId=null;renderNotes();}
+function openFolderModal(){document.getElementById('fold-name').value='';document.getElementById('ov-folder').classList.add('open');}
+function saveFolder(){
+  var name=document.getElementById('fold-name').value.trim();if(!name)return;
+  folders.push({id:Date.now().toString(),name:name});
+  save('re3_folders',folders);closeOv('ov-folder');renderNotes();
+}
+function delFolder(id,e){
+  e.stopPropagation();if(!confirm('Удалить папку и все заметки?'))return;
+  folders=folders.filter(function(f){return f.id!==id;});
+  notes=notes.filter(function(n){return n.folderId!==id;});
+  save('re3_folders',folders);save('re3_notes2',notes);renderNotes();
+}
+function openNoteModal(){
+  neid=null;document.getElementById('ntit').textContent='Новая заметка';
+  document.getElementById('nn-title').value='';document.getElementById('nn-text').value='';
+  document.getElementById('ndl').style.display='none';
+  document.getElementById('ov-note').classList.add('open');
+}
+function openEditNote(id){
+  var n=notes.find(function(x){return x.id===id;});if(!n)return;neid=id;
+  document.getElementById('ntit').textContent='Редактировать заметку';
+  document.getElementById('nn-title').value=n.title||'';document.getElementById('nn-text').value=n.text||'';
+  document.getElementById('ndl').style.display='inline-block';
+  document.getElementById('ov-note').classList.add('open');
+}
+function saveNote(){
+  var title=document.getElementById('nn-title').value.trim();if(!title){alert('Укажи заголовок');return;}
+  var obj={title:title,text:document.getElementById('nn-text').value.trim(),folderId:activeFolderId};
+  if(neid){Object.assign(notes.find(function(x){return x.id===neid;}),obj);}
+  else{notes.push(Object.assign({id:Date.now().toString()},obj));}
+  save('re3_notes2',notes);closeOv('ov-note');renderNotes();
+}
+function delNote(){
+  if(!neid||!confirm('Удалить заметку?'))return;
+  notes=notes.filter(function(x){return x.id!==neid;});
+  save('re3_notes2',notes);closeOv('ov-note');renderNotes();
+}
+
+function openReleaseModal(ds){
+  releid=null;
+  document.getElementById('reltit').textContent='Новый релиз';
+  document.getElementById('rel-name').value='';
+  document.getElementById('rel-date').value=ds||'';
+  document.getElementById('rel-link').value='';
+  document.getElementById('reldl').style.display='none';
+  document.getElementById('ov-release').classList.add('open');
+}
+function openEditRelease(id){
+  var r=releases.find(function(x){return x.id===id;});if(!r)return;releid=id;
+  document.getElementById('reltit').textContent='Редактировать релиз';
+  document.getElementById('rel-name').value=r.name;
+  document.getElementById('rel-date').value=r.date;
+  document.getElementById('rel-link').value=r.link||'';
+  document.getElementById('reldl').style.display='inline-block';
+  document.getElementById('ov-release').classList.add('open');
+}
+function saveRelease(){
+  var name=document.getElementById('rel-name').value.trim(),date=document.getElementById('rel-date').value;
+  if(!name||!date){alert('Укажи название и дату');return;}
+  var obj={name:name,date:date,link:document.getElementById('rel-link').value.trim()};
+  if(releid){Object.assign(releases.find(function(x){return x.id===releid;}),obj);}
+  else{releases.push(Object.assign({id:Date.now().toString()},obj));}
+  save('re3_releases',releases);closeOv('ov-release');renderCal();
+}
+function delRelease(){
+  if(!releid||!confirm('Удалить релиз?'))return;
+  releases=releases.filter(function(x){return x.id!==releid;});
+  save('re3_releases',releases);closeOv('ov-release');renderCal();
+}
+
+function toggleQr(id){
+  var box=document.getElementById(id);
+  var toggle=box?box.previousElementSibling:null;
+  if(!box)return;
+  var isOpen=box.classList.contains('open');
+  box.classList.toggle('open');
+  if(toggle){toggle.textContent=isOpen?'показать QR':'скрыть QR';}
+}
+function closeOv(id){document.getElementById(id).classList.remove('open');}
+['ov-home','ov-daypick','ov-release','ov-reel','ov-fin','ov-folder','ov-note'].forEach(function(id){
+  document.getElementById(id).onclick=function(e){if(e.target===document.getElementById(id))closeOv(id);};
+});
+
+loadAll(function(){
+  renderHome();
+  renderCal();
+});
+</script>
+</body>
+</html>
