@@ -1189,30 +1189,27 @@ function initPush(){
 }
 
 function enablePush(){
-  if(!('serviceWorker' in navigator)||!('PushManager' in window)){
-    alert('Уведомления не поддерживаются. Открой хаб с экрана домой в Safari.');
-    return;
-  }
+  if(!('serviceWorker' in navigator)||!('PushManager' in window)) return;
   navigator.serviceWorker.ready.then(function(reg){
+    /* Если уже заблокировано — тихо выходим */
+    if(Notification.permission==='denied') return;
+    /* Если уже разрешено — просто подписываемся */
+    if(Notification.permission==='granted'){
+      subscribePush(reg);
+      return;
+    }
+    /* Запрашиваем разрешение */
     Notification.requestPermission().then(function(perm){
-      if(perm!=='granted'){alert('Разреши уведомления в настройках Safari');return;}
-      var key=urlB64ToUint8Array(VAPID_PUBLIC_KEY);
-      reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:key}).then(function(sub){
-        sendSubToWorker(sub);
-        updatePushBtn(true);
-        alert('Уведомления включены! 🎉');
-      }).catch(function(e){
-        alert('Ошибка подписки: '+e.message);
-      });
+      if(perm==='granted') subscribePush(reg);
     });
   });
 }
 
-function updatePushBtn(enabled){
-  var btn=document.getElementById('push-enable-btn');
-  if(!btn) return;
-  btn.textContent=enabled?'🔔 Уведомления включены':'🔕 Включить уведомления';
-  btn.style.color=enabled?'var(--success)':'var(--text2)';
+function subscribePush(reg){
+  var key=urlB64ToUint8Array(VAPID_PUBLIC_KEY);
+  reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:key}).then(function(sub){
+    sendSubToWorker(sub);
+  }).catch(function(){});
 }
 
 function sendSubToWorker(sub){
