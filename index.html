@@ -32,7 +32,7 @@ body{padding-bottom:env(safe-area-inset-bottom)}
 /* ===== HOME ===== */
 .home-hero{background:#0e0e0e;border-radius:20px;max-width:420px;overflow:hidden;position:relative;box-shadow:0 24px 64px rgba(0,0,0,.18)}
 .home-cover{width:100%;height:220px;background:linear-gradient(160deg,#1a1230 0%,#0e0e0e 100%);position:relative;overflow:hidden}
-.home-cover-img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
+.home-cover-img{width:100%;height:100%;object-fit:cover;object-position:center 15%;display:block}
 .home-cover-gradient{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(14,14,14,0) 30%,rgba(14,14,14,.85) 80%,rgba(14,14,14,1) 100%)}
 .home-cover-initials{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:52px;font-weight:800;color:rgba(255,255,255,.08);letter-spacing:-2px}
 .home-body{padding:0 24px 28px;margin-top:-32px;position:relative}
@@ -40,10 +40,11 @@ body{padding-bottom:env(safe-area-inset-bottom)}
 .home-role{font-size:11px;color:rgba(255,255,255,.45);font-weight:500;letter-spacing:.6px;text-transform:uppercase;margin-bottom:14px}
 .home-role-wrap{display:none}
 .home-bio{font-size:12px;color:rgba(255,255,255,.4);line-height:1.6;margin-bottom:22px;border-top:1px solid rgba(255,255,255,.07);padding-top:16px}
-.social-links{display:flex;flex-direction:column;gap:16px}
-.social-block{display:flex;flex-direction:column;gap:10px}
+.social-links{display:flex;flex-direction:column;gap:0}
+.social-block{display:flex;flex-direction:column;gap:6px;padding-bottom:20px;border-bottom:1px solid rgba(255,255,255,.06)}
 .social-link{display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;color:rgba(255,255,255,.5);text-decoration:none;transition:color .2s;font-weight:400;padding:0;background:none;border:none;letter-spacing:.2px}
 .social-link:hover{color:#fff}
+.social-net-label{font-size:10px;font-weight:600;color:rgba(255,255,255,.25);text-transform:uppercase;letter-spacing:.7px;margin-bottom:2px}
 .social-icon{display:none}
 .qr-box{width:100%;display:flex;justify-content:center;margin-top:4px}
 .qr-box img{width:130px;height:130px;object-fit:cover;border-radius:10px}
@@ -419,15 +420,12 @@ function renderHome(){
   var links='';
   if(h.ig){
     var igQrContent=h['ig-qr']?'<img src="'+h['ig-qr']+'" alt="IG QR">':'<div class="qr-box-empty">Добавь QR в редакторе</div>';
-    links+='<div class="social-block"><a class="social-link" href="'+h.ig+'" target="_blank">'+h.ig.replace(/https?:\/\/(www\.)?/,'')+'</a></div>';
-    links+='<div class="qr-box" id="qr-ig">'+igQrContent+'</div>';
+    links+='<div class="social-block"><div class="social-net-label">Instagram</div><a class="social-link" href="'+h.ig+'" target="_blank">'+h.ig.replace(/https?:\/\/(www\.)?/,'')+'</a><div class="qr-box">'+igQrContent+'</div></div>';
   }
   if(h.tg){
     var tgQrContent=h['tg-qr']?'<img src="'+h['tg-qr']+'" alt="TG QR">':'<div class="qr-box-empty">Добавь QR в редакторе</div>';
-    links+='<div class="social-block"><a class="social-link" href="'+h.tg+'" target="_blank">'+h.tg.replace(/https?:\/\//,'')+'</a></div>';
-    links+='<div class="qr-box" id="qr-tg">'+tgQrContent+'</div>';
+    links+='<div class="social-block"><div class="social-net-label">Telegram</div><a class="social-link" href="'+h.tg+'" target="_blank">'+h.tg.replace(/https?:\/\//,'')+'</a><div class="qr-box">'+tgQrContent+'</div></div>';
   }
-  if(h.ym) links+='<a class="social-link" href="'+h.ym+'" target="_blank"><div class="social-icon">ЯМ</div>Яндекс Музыка</a>';
   document.getElementById('home-card').innerHTML=
     '<div class="home-hero">'+
     '<button class="edit-home-btn" onclick="openHomeModal()">Редактировать</button>'+
