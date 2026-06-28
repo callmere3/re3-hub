@@ -45,9 +45,8 @@ body{padding-bottom:env(safe-area-inset-bottom)}
 .social-link{display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;color:rgba(255,255,255,.5);text-decoration:none;transition:color .2s;font-weight:400;padding:0;background:none;border:none;letter-spacing:.2px}
 .social-link:hover{color:#fff}
 .social-icon{display:none}
-.qr-box{width:100%;max-height:0;overflow:hidden;transition:max-height .35s ease,opacity .3s ease;opacity:0;display:flex;justify-content:center}
-.qr-box.open{max-height:200px;opacity:1}
-.qr-box img{width:140px;height:140px;object-fit:cover;border-radius:10px;margin:8px 0}
+.qr-box{width:100%;display:flex;justify-content:center;margin-top:4px}
+.qr-box img{width:130px;height:130px;object-fit:cover;border-radius:10px}
 .qr-box-empty{font-size:9px;color:rgba(255,255,255,.2);text-align:center;padding:8px;line-height:1.5}
 .qr-toggle{font-size:10px;color:rgba(255,255,255,.25);letter-spacing:.4px;text-transform:uppercase;cursor:pointer;transition:color .2s;text-align:center;margin-top:2px;user-select:none}
 .qr-toggle:hover{color:rgba(255,255,255,.5)}
@@ -170,7 +169,7 @@ body{padding-bottom:env(safe-area-inset-bottom)}
   <div class="nav-spacer"></div>
   <button class="theme-btn" onclick="toggleTheme()" id="theme-btn">🌙</button>
 </nav>
-<div id="loading-bar" style="display:none;position:fixed;top:52px;left:0;right:0;z-index:49;background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 16px;align-items:center;gap:10px;font-size:13px;color:var(--text2)">
+<div id="loading-bar" style="display:none;position:fixed;top:52px;left:0;right:0;z-index:49;background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 16px;font-size:13px;color:var(--text2)">
   <div style="width:18px;height:18px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0"></div>
   Загрузка данных...
 </div>
@@ -346,7 +345,7 @@ var notesView='folders',activeFolderId=null;
 
 function showSyncing(){var el=document.getElementById('sync-status');if(el){el.textContent='Сохранение...';el.style.opacity='1';}}
 function hideSyncing(){var el=document.getElementById('sync-status');if(el){el.textContent='Сохранено ✓';setTimeout(function(){el.style.opacity='0';},1500);}}
-function showLoading(show){var el=document.getElementById('loading-bar');if(el){el.style.display=show?'flex':'none';}}
+function showLoading(show){var el=document.getElementById('loading-bar');if(el){el.style.display=show?'block':'none';}}
 
 function gsGet(key,cb){
   fetch(SCRIPT_URL+'?key='+key)
