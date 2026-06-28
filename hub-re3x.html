@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- RE3 Hub v1.7.0 | 2026-06-28 -->
+<!-- RE3 Hub v1.8.0 | 2026-06-28 -->
 <html lang="ru" data-theme="dark">
 <head>
 <meta charset="UTF-8">
@@ -493,11 +493,11 @@ function renderHome(){
   var links='';
   if(h.ig){
     var igQrContent=h['ig-qr']?'<img src="'+h['ig-qr']+'" alt="IG QR">':'<div class="qr-box-empty">Добавь QR в редакторе</div>';
-    links+='<div class="social-block"><div class="social-net-label">Instagram</div><a class="social-link" href="'+h.ig+'" target="_blank">'+h.ig.replace(/https?:\/\/(www\.)?/,'')+'</a><button class="qr-toggle-btn" id="qr-btn-ig" onclick="toggleQr(\'qr-ig\',\'qr-btn-ig\')">Показать QR</button><div class="qr-box" id="qr-ig">'+igQrContent+'</div></div>';
+    links+='<div class="social-block"><div class="social-net-label">Instagram</div><a class="social-link" href="'+h.ig+'" target="_blank">'+h.ig.split('://').pop().split('www.').pop()+'</a><button class="qr-toggle-btn" id="qr-btn-ig" onclick="toggleQr(\'qr-ig\',\'qr-btn-ig\')">Показать QR</button><div class="qr-box" id="qr-ig">'+igQrContent+'</div></div>';
   }
   if(h.tg){
     var tgQrContent=h['tg-qr']?'<img src="'+h['tg-qr']+'" alt="TG QR">':'<div class="qr-box-empty">Добавь QR в редакторе</div>';
-    links+='<div class="social-block"><div class="social-net-label">Telegram</div><a class="social-link" href="'+h.tg+'" target="_blank">'+h.tg.replace(/https?:\/\//,'')+'</a><button class="qr-toggle-btn" id="qr-btn-tg" onclick="toggleQr(\'qr-tg\',\'qr-btn-tg\')">Показать QR</button><div class="qr-box" id="qr-tg">'+tgQrContent+'</div></div>';
+    links+='<div class="social-block"><div class="social-net-label">Telegram</div><a class="social-link" href="'+h.tg+'" target="_blank">'+h.tg.split('://').pop()+'</a><button class="qr-toggle-btn" id="qr-btn-tg" onclick="toggleQr(\'qr-tg\',\'qr-btn-tg\')">Показать QR</button><div class="qr-box" id="qr-tg">'+tgQrContent+'</div></div>';
   }
   document.getElementById('home-card').innerHTML=
     '<div class="home-hero">'+
@@ -508,11 +508,10 @@ function renderHome(){
     '<div class="home-role">'+(h.role||'')+'</div>'+
     (h.bio?'<div class="home-bio">'+(h.bio||'')+'</div>':'')+
     '<div class="social-links">'+links+'</div>'+
-    '<button class="share-btn" onclick="shareCard()">'+
-    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">'+
-    '<path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/>'+
-    '</svg>Поделиться визиткой</button>'+
+    '<button class="share-btn" onclick="shareCard()">Поделиться визиткой</button>'+
+    '<button id="push-enable-btn" class="share-btn" onclick="onPushBtnClick()" style="margin-top:8px">🔔 Включить уведомления</button>'+
     '</div></div>';
+  updatePushBtn(('Notification' in window) ? Notification.permission : 'unsupported');
 }
 function openHomeModal(){
   var fields=['name','role','bio','ig','tg','ym','photo'];
@@ -1174,35 +1173,83 @@ function shareCard(){
 var WORKER_URL='https://re3-push.callmere3.workers.dev';
 var VAPID_PUBLIC_KEY='BGWlzpFR_-YOLsSo4zEo3ycWTrjicSBR4MytRNmR5yPP3lfHyFAFN_ReVhRHo-AEOhqygBX3I7mt2pyMfFQQcWk';
 
+/* initPush — только регистрирует SW и обновляет кнопку.
+   НЕ запрашивает разрешение автоматически — iOS требует явный жест */
 function initPush(){
   if(!('serviceWorker' in navigator)||!('PushManager' in window)) return;
   navigator.serviceWorker.register('/re3-hub/sw.js').then(function(reg){
     reg.pushManager.getSubscription().then(function(sub){
       if(sub){
+        /* Уже подписан — обновляем sub на worker и показываем статус */
         sendSubToWorker(sub);
+        updatePushBtn('granted');
       } else {
-        /* Ждём 2 сек после загрузки чтобы не пугать сразу */
-        setTimeout(function(){ enablePush(); }, 2000);
+        updatePushBtn(('Notification' in window) ? Notification.permission : 'unsupported');
       }
     });
   });
 }
 
-function enablePush(){
-  if(!('serviceWorker' in navigator)||!('PushManager' in window)) return;
-  navigator.serviceWorker.ready.then(function(reg){
-    /* Если уже заблокировано — тихо выходим */
-    if(Notification.permission==='denied') return;
-    /* Если уже разрешено — просто подписываемся */
-    if(Notification.permission==='granted'){
-      subscribePush(reg);
-      return;
-    }
-    /* Запрашиваем разрешение */
-    Notification.requestPermission().then(function(perm){
-      if(perm==='granted') subscribePush(reg);
+/* Вызывается ТОЛЬКО из onclick кнопки.
+   requestPermission должен быть в прямом стеке user gesture — никаких setTimeout/await до него */
+function onPushBtnClick(){
+  if(!('serviceWorker' in navigator)||!('PushManager' in window)){
+    alert('Push-уведомления не поддерживаются в этом браузере.');
+    return;
+  }
+  if(!('Notification' in window)){
+    alert('Уведомления не поддерживаются.');
+    return;
+  }
+  if(Notification.permission==='denied'){
+    alert('Уведомления заблокированы.\n\nЧтобы включить: Настройки → Safari → RE3 Hub → Уведомления → Разрешить.');
+    return;
+  }
+  if(Notification.permission==='granted'){
+    /* Уже разрешено — просто подписываемся если ещё нет подписки */
+    navigator.serviceWorker.ready.then(function(reg){
+      reg.pushManager.getSubscription().then(function(sub){
+        if(sub){ sendSubToWorker(sub); }
+        else { subscribePush(reg); }
+      });
+    });
+    updatePushBtn('granted');
+    return;
+  }
+  /* permission === 'default' — запрашиваем прямо здесь, в стеке клика */
+  Notification.requestPermission().then(function(perm){
+    updatePushBtn(perm);
+    if(perm!=='granted') return;
+    navigator.serviceWorker.ready.then(function(reg){
+      reg.pushManager.getSubscription().then(function(sub){
+        if(sub){ sendSubToWorker(sub); }
+        else { subscribePush(reg); }
+      });
     });
   });
+}
+
+function updatePushBtn(perm){
+  var btn=document.getElementById('push-enable-btn');
+  if(!btn) return;
+  if(perm==='granted'){
+    btn.textContent='🔔 Уведомления включены ✓';
+    btn.disabled=true;
+    btn.style.opacity='0.45';
+    btn.style.cursor='default';
+  } else if(perm==='denied'){
+    btn.textContent='🔕 Уведомления заблокированы';
+    btn.disabled=false;
+    btn.style.opacity='0.6';
+    btn.style.cursor='pointer';
+  } else if(perm==='unsupported'){
+    btn.style.display='none';
+  } else {
+    btn.textContent='🔔 Включить уведомления';
+    btn.disabled=false;
+    btn.style.opacity='1';
+    btn.style.cursor='pointer';
+  }
 }
 
 function subscribePush(reg){
@@ -1230,7 +1277,7 @@ function updatePushSchedule(){
 
 function urlB64ToUint8Array(b64){
   var pad='='.repeat((4-b64.length%4)%4);
-  var raw=atob(b64.replace(/-/g,'+').replace(/_/g,'/')+pad);
+  var raw=atob(b64.split('-').join('+').split('_').join('/')+pad);
   var out=new Uint8Array(raw.length);
   for(var i=0;i<raw.length;i++) out[i]=raw.charCodeAt(i);
   return out;
