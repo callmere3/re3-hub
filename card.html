@@ -38,14 +38,8 @@ body{
 .slink{display:flex;align-items:center;justify-content:center;font-size:13px;color:rgba(255,255,255,.5);text-decoration:none;transition:color .2s;font-weight:400;letter-spacing:.2px}
 .slink:hover{color:#fff}
 
-.qr-btn{width:100%;background:#9b3030;border:none;border-radius:10px;cursor:pointer;color:#fff;font-family:inherit;font-size:12px;font-weight:600;padding:10px 14px;display:flex;align-items:center;justify-content:center;gap:6px;transition:opacity .15s;margin-top:6px}
-.qr-btn:hover{opacity:.85}
-.qr-btn svg{width:14px;height:14px;transition:transform .3s;flex-shrink:0}
-.qr-btn.open svg{transform:rotate(180deg)}
-.qr-box{width:100%;display:flex;justify-content:center;margin-top:0;max-height:0;overflow:hidden;transition:max-height .35s ease,margin-top .35s ease}
-.qr-box.open{max-height:160px;margin-top:8px}
-.qr-box img{width:120px;height:120px;object-fit:cover;border-radius:10px}
-.qr-box-empty{font-size:9px;color:rgba(255,255,255,.2);text-align:center;padding:8px;line-height:1.5}
+.qr-box-static{display:flex;justify-content:center;margin-top:10px}
+.qr-box-static img{width:120px;height:120px;object-fit:cover;border-radius:10px}
 
 .loading{text-align:center;padding:60px 0;color:rgba(255,255,255,.3);font-size:13px}
 .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#9b3030;opacity:.3;animation:pulse 1s ease-in-out infinite}
@@ -69,24 +63,6 @@ body{
 <script>
 var SCRIPT_URL='https://script.google.com/macros/s/AKfycbxWaVLP8OUKgyse3dptdWcncHD4nMKF6MIMtYQguTqfbInNyV2trHD51XuS_RYLACbq/exec';
 
-function toggleQr(boxId,btnId){
-  var box=document.getElementById(boxId);
-  var btn=document.getElementById(btnId);
-  if(!box) return;
-  box.classList.toggle('open');
-  if(btn){
-    btn.classList.toggle('open');
-    btn.textContent=box.classList.contains('open')?'Скрыть QR':'Показать QR';
-    if(box.classList.contains('open')){
-      var chevron='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg>';
-      btn.innerHTML=chevron+'Скрыть QR';
-    } else {
-      var chevron2='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>';
-      btn.innerHTML=chevron2+'Показать QR';
-    }
-  }
-}
-
 function render(h){
   var initials=(h.name||'RE3').toUpperCase();
   var coverHtml=h.photo
@@ -95,23 +71,19 @@ function render(h){
 
   var links='';
   if(h.ig){
-    var chevronDown='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>';
-    var igQr=h['ig-qr']?'<img src="'+h['ig-qr']+'" alt="IG QR">':'<div class="qr-box-empty">QR не добавлен</div>';
+    var igQr=h['ig-qr']?'<img src="'+h['ig-qr']+'" alt="IG QR">':'';
     links+='<div class="social-block">'+
       '<div class="net-label">Instagram</div>'+
       '<a class="slink" href="'+h.ig+'" target="_blank">'+h.ig.replace(/https?:\/\/(www\.)?/,'')+'</a>'+
-      '<button class="qr-btn" id="qr-btn-ig" onclick="toggleQr(\'qr-ig\',\'qr-btn-ig\')">'+chevronDown+'Показать QR</button>'+
-      '<div class="qr-box" id="qr-ig">'+igQr+'</div>'+
+      (igQr?'<div class="qr-box-static">'+igQr+'</div>':'')+
       '</div>';
   }
   if(h.tg){
-    var chevronDown2='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>';
-    var tgQr=h['tg-qr']?'<img src="'+h['tg-qr']+'" alt="TG QR">':'<div class="qr-box-empty">QR не добавлен</div>';
+    var tgQr=h['tg-qr']?'<img src="'+h['tg-qr']+'" alt="TG QR">':'';
     links+='<div class="social-block">'+
       '<div class="net-label">Telegram</div>'+
       '<a class="slink" href="'+h.tg+'" target="_blank">'+h.tg.replace(/https?:\/\//,'')+'</a>'+
-      '<button class="qr-btn" id="qr-btn-tg" onclick="toggleQr(\'qr-tg\',\'qr-btn-tg\')">'+chevronDown2+'Показать QR</button>'+
-      '<div class="qr-box" id="qr-tg">'+tgQr+'</div>'+
+      (tgQr?'<div class="qr-box-static">'+tgQr+'</div>':'')+
       '</div>';
   }
 
