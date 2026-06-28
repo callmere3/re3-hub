@@ -402,7 +402,7 @@ function save(k,v){localStorage.setItem(k,JSON.stringify(v));gsSave(k,v);}
 
 function loadAll(cb){
   showLoading(true);
-  var keys=['re3_home','re3_reels','re3_fins','re3_folders','re3_notes2','re3_releases'];
+  var keys=['re3_home','re3_reels','re3_fins','re3_folders','re3_notes2','re3_releases','re3_pin'];
   var done=0;
   keys.forEach(function(k){
     gsGet(k,function(val){
@@ -418,6 +418,7 @@ function loadAll(cb){
         else if(k==='re3_folders') folders=data;
         else if(k==='re3_notes2') notes=data;
         else if(k==='re3_releases') releases=data;
+        else if(k==='re3_pin') localStorage.setItem(PIN_KEY,data);
       }
       done++;
       if(done===keys.length){showLoading(false);if(cb)cb();}
@@ -782,6 +783,28 @@ var pinSetupFirst='';
 
 function getPin(){return localStorage.getItem(PIN_KEY)||'';}
 
+function hashPin(pin){
+  var encoder=new TextEncoder();
+  var data=encoder.encode(pin+'re3salt2026');
+  return crypto.subtle.digest('SHA-256',data).then(function(buf){
+    return Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
+  });
+}
+
+function savePin(pin,cb){
+  hashPin(pin).then(function(hash){
+    localStorage.setItem(PIN_KEY,hash);
+    gsSave(PIN_KEY,hash);
+    if(cb) cb();
+  });
+}
+
+function checkPin(pin,cb){
+  hashPin(pin).then(function(hash){
+    cb(hash===getPin());
+  });
+}
+
 function toggleFinHide(){
   finHidden=!finHidden;
   renderFin();
@@ -800,21 +823,23 @@ function pinKey(k){
   updatePinDots('pd',pinInput);
   if(pinInput.length===4){
     setTimeout(function(){
-      if(pinInput===getPin()){
-        closeOv('ov-pin');
-        pinInput='';
-        if(pendingPageBtn){
-          doShowPage('finance',pendingPageBtn);
-          pendingPageBtn=null;
+      checkPin(pinInput,function(ok){
+        if(ok){
+          closeOv('ov-pin');
+          pinInput='';
+          if(pendingPageBtn){
+            doShowPage('finance',pendingPageBtn);
+            pendingPageBtn=null;
+          } else {
+            finHidden=false;
+            renderFin();
+          }
         } else {
-          finHidden=false;
-          renderFin();
+          document.getElementById('pin-error').textContent='Неверный PIN';
+          pinInput='';
+          updatePinDots('pd',pinInput);
         }
-      } else {
-        document.getElementById('pin-error').textContent='Неверный PIN';
-        pinInput='';
-        updatePinDots('pd',pinInput);
-      }
+      });
     },200);
   }
 }
@@ -859,15 +884,16 @@ function pinSetupKey(k){
         updatePinDots('psd',pinSetupInput);
       } else {
         if(pinSetupInput===pinSetupFirst){
-          localStorage.setItem(PIN_KEY,pinSetupInput);
-          closeOv('ov-pin-setup');
-          if(pendingPageBtn){
-            doShowPage('finance',pendingPageBtn);
-            pendingPageBtn=null;
-          } else {
-            finHidden=false;
-            renderFin();
-          }
+          savePin(pinSetupInput,function(){
+            closeOv('ov-pin-setup');
+            if(pendingPageBtn){
+              doShowPage('finance',pendingPageBtn);
+              pendingPageBtn=null;
+            } else {
+              finHidden=false;
+              renderFin();
+            }
+          });
         } else {
           document.getElementById('pin-setup-error').textContent='PIN не совпадает, попробуй снова';
           pinSetupInput='';
@@ -912,18 +938,20 @@ function pinChangeKey(k){
   if(pinChangeInput.length===4){
     setTimeout(function(){
       if(pinChangeStep===1){
-        if(pinChangeInput!==getPin()){
-          document.getElementById('pin-change-error').textContent='Неверный PIN';
+        checkPin(pinChangeInput,function(ok){
+          if(!ok){
+            document.getElementById('pin-change-error').textContent='Неверный PIN';
+            pinChangeInput='';
+            updatePinDots('pcd',pinChangeInput);
+            return;
+          }
+          pinChangeStep=2;
           pinChangeInput='';
+          document.getElementById('pin-change-title').textContent='Новый PIN';
+          document.getElementById('pin-change-sub').textContent='Введи новый PIN';
+          document.getElementById('pin-change-error').textContent='';
           updatePinDots('pcd',pinChangeInput);
-          return;
-        }
-        pinChangeStep=2;
-        pinChangeInput='';
-        document.getElementById('pin-change-title').textContent='Новый PIN';
-        document.getElementById('pin-change-sub').textContent='Введи новый PIN';
-        document.getElementById('pin-change-error').textContent='';
-        updatePinDots('pcd',pinChangeInput);
+        });
       } else if(pinChangeStep===2){
         pinChangeNewFirst=pinChangeInput;
         pinChangeInput='';
@@ -934,9 +962,10 @@ function pinChangeKey(k){
         updatePinDots('pcd',pinChangeInput);
       } else {
         if(pinChangeInput===pinChangeNewFirst){
-          localStorage.setItem(PIN_KEY,pinChangeInput);
-          closeOv('ov-pin-change');
-          openPin();
+          savePin(pinChangeInput,function(){
+            closeOv('ov-pin-change');
+            openPin();
+          });
         } else {
           document.getElementById('pin-change-error').textContent='PIN не совпадает';
           pinChangeInput='';
@@ -964,6 +993,7 @@ function showPinReset(){
 
 function confirmPinReset(){
   localStorage.removeItem(PIN_KEY);
+  gsSave(PIN_KEY,'');
   fins=[];
   save('re3_fins',fins);
   closeOv('ov-pin-reset');
