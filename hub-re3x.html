@@ -236,6 +236,7 @@ body{padding-bottom:env(safe-area-inset-bottom)}
   <button class="nav-btn" onclick="showPage('calendar',this)">Календарь</button>
   <button class="nav-btn" onclick="showPage('finance',this)">Финансы</button>
   <div class="nav-spacer"></div>
+  <button id="push-enable-btn" onclick="enablePush()" style="background:none;border:none;cursor:pointer;font-family:inherit;font-size:12px;color:var(--text2);padding:6px 10px;border-radius:var(--radius);transition:all .15s;white-space:nowrap;flex-shrink:0">🔕 Уведомления</button>
 </nav>
 <div id="sync-status" style="position:fixed;bottom:16px;right:16px;background:#1a1a1a;border:1px solid rgba(255,255,255,.1);border-radius:var(--radius);padding:6px 12px;font-size:12px;color:rgba(255,255,255,.5);opacity:0;transition:opacity .3s;z-index:49;pointer-events:none"></div>
 <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
@@ -1180,17 +1181,39 @@ function initPush(){
     reg.pushManager.getSubscription().then(function(sub){
       if(sub){
         sendSubToWorker(sub);
+        updatePushBtn(true);
       } else {
-        Notification.requestPermission().then(function(perm){
-          if(perm!=='granted') return;
-          var key=urlB64ToUint8Array(VAPID_PUBLIC_KEY);
-          reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:key}).then(function(sub){
-            sendSubToWorker(sub);
-          });
-        });
+        updatePushBtn(false);
       }
     });
   });
+}
+
+function enablePush(){
+  if(!('serviceWorker' in navigator)||!('PushManager' in window)){
+    alert('Уведомления не поддерживаются. Открой хаб с экрана домой в Safari.');
+    return;
+  }
+  navigator.serviceWorker.ready.then(function(reg){
+    Notification.requestPermission().then(function(perm){
+      if(perm!=='granted'){alert('Разреши уведомления в настройках Safari');return;}
+      var key=urlB64ToUint8Array(VAPID_PUBLIC_KEY);
+      reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:key}).then(function(sub){
+        sendSubToWorker(sub);
+        updatePushBtn(true);
+        alert('Уведомления включены! 🎉');
+      }).catch(function(e){
+        alert('Ошибка подписки: '+e.message);
+      });
+    });
+  });
+}
+
+function updatePushBtn(enabled){
+  var btn=document.getElementById('push-enable-btn');
+  if(!btn) return;
+  btn.textContent=enabled?'🔔 Уведомления включены':'🔕 Включить уведомления';
+  btn.style.color=enabled?'var(--success)':'var(--text2)';
 }
 
 function sendSubToWorker(sub){
