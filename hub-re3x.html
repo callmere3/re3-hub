@@ -477,7 +477,7 @@ function doShowPage(id,btn){
   pg.style.display=id==='home'?'flex':'block';
   btn.classList.add('active');
   currentPage=pages.indexOf(id);
-  if(id==='calendar') renderCal();
+  if(id==='calendar'){autoPublishReels();renderCal();}
   if(id==='finance') renderFin();
   if(id==='notes') renderNotes();
 }
@@ -533,6 +533,20 @@ function saveHome(){
     'tg-qr':document.getElementById('h-tg-qr').value.trim()
   };
   save('re3_home',home);closeOv('ov-home');renderHome();
+}
+
+/* AUTO-PUBLISH REELS */
+function autoPublishReels(){
+  var today=new Date();
+  var td=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
+  var changed=false;
+  reels.forEach(function(r){
+    if(r.status==='ready' && r.date<=td){
+      r.status='pub';
+      changed=true;
+    }
+  });
+  if(changed) save('re3_reels',reels);
 }
 
 /* CALENDAR */
@@ -1185,6 +1199,7 @@ document.addEventListener('touchend',function(e){
 });
 
 loadAll(function(){
+  autoPublishReels();
   renderHome();
   renderCal();
   document.getElementById('page-home').style.display='flex';
