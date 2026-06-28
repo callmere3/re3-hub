@@ -177,6 +177,24 @@ body{padding-bottom:env(safe-area-inset-bottom)}
 .fl textarea{min-height:100px;resize:vertical;line-height:1.65}
 .fl-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:end}
 .macts{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid rgba(255,255,255,.07)}
+
+/* Swipe pages */
+.pages-wrapper{position:relative;overflow:hidden}
+
+/* Eye button */
+.eye-btn{background:none;border:none;cursor:pointer;color:rgba(255,255,255,.4);padding:4px;display:flex;align-items:center;justify-content:center;transition:color .2s;flex-shrink:0}
+.eye-btn:hover{color:rgba(255,255,255,.8)}
+.eye-btn svg{width:18px;height:18px}
+.hidden-val{filter:blur(8px);user-select:none;transition:filter .2s}
+
+/* Balance banner flex */
+.balance-top{display:flex;align-items:flex-start;justify-content:space-between}
+
+.pin-key{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:16px;font-size:20px;font-weight:500;color:#fff;cursor:pointer;font-family:inherit;transition:all .15s}
+.pin-key:hover{background:rgba(255,255,255,.14)}
+.pin-key:active{background:rgba(255,255,255,.2);transform:scale(.95)}
+.pin-key-ghost{background:none;border-color:transparent;color:rgba(255,255,255,.4)}
+.pin-key-ghost:hover{background:rgba(255,255,255,.06)}
 </style>
 </head>
 <body>
@@ -410,12 +428,28 @@ function loadAll(cb){
 
 
 function showPage(id,btn){
+  if(id==='finance'){
+    pendingPageBtn=btn;
+    if(!getPin()){
+      showPinSetup();
+    } else {
+      openPin();
+    }
+    return;
+  }
+  doShowPage(id,btn);
+}
+
+var pendingPageBtn=null;
+
+function doShowPage(id,btn){
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');p.style.display='none';});
   document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active');});
   var pg=document.getElementById('page-'+id);
   pg.classList.add('active');
   pg.style.display=id==='home'?'flex':'block';
   btn.classList.add('active');
+  currentPage=pages.indexOf(id);
   if(id==='calendar') renderCal();
   if(id==='finance') renderFin();
   if(id==='notes') renderNotes();
@@ -559,16 +593,28 @@ function delReel(){
 }
 
 /* FINANCE */
+var finHidden=true;
+function toggleFinHide(){
+  finHidden=!finHidden;
+  renderFin();
+}
 function renderFin(){
   var inc=fins.filter(function(f){return f.type==='income';}),exp=fins.filter(function(f){return f.type==='expense';});
   var ti=inc.reduce(function(s,f){return s+f.amount;},0),te=exp.reduce(function(s,f){return s+f.amount;},0);
   function fmt(n){return n.toLocaleString('ru-RU')+'₽';}
+  var hc=finHidden?' hidden-val':'';
+  var eyeOpen='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+  var eyeClosed='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><line x1="2" y1="2" x2="22" y2="22"/></svg>';
   document.getElementById('balance-banner').innerHTML=
     '<div class="balance-banner">'+
-    '<div class="bl">Баланс</div><div class="bv">'+fmt(ti-te)+'</div>'+
+    '<div class="balance-top">'+
+    '<div class="bl">Баланс</div>'+
+    '<button class="eye-btn" onclick="toggleFinHide()">'+( finHidden?eyeOpen:eyeClosed)+'</button>'+
+    '</div>'+
+    '<div class="bv'+hc+'">'+fmt(ti-te)+'</div>'+
     '<div class="balance-pills">'+
-    '<div class="bpill"><div class="bpill-l">Доходы</div><div class="bpill-v inc-color">+'+fmt(ti)+'</div></div>'+
-    '<div class="bpill"><div class="bpill-l">Расходы</div><div class="bpill-v exp-color">−'+fmt(te)+'</div></div>'+
+    '<div class="bpill"><div class="bpill-l">Доходы</div><div class="bpill-v inc-color'+hc+'">+'+fmt(ti)+'</div></div>'+
+    '<div class="bpill"><div class="bpill-l">Расходы</div><div class="bpill-v exp-color'+hc+'">−'+fmt(te)+'</div></div>'+
     '</div></div>';
   var il=document.getElementById('income-list');
   il.innerHTML=inc.length?'':'<div class="empty-state">Нет доходов</div>';
@@ -577,7 +623,7 @@ function renderFin(){
     r.innerHTML='<div class="fin-row-body"><div class="fin-row-name">'+f.name+'</div>'+(f.desc?'<div class="fin-row-desc">'+f.desc+'</div>':'')+'</div>'+
       '<div class="fin-row-right"><div class="fin-amount inc-color">+'+f.amount.toLocaleString('ru-RU')+'₽</div>'+
       '<span class="badge '+(f.status==='paid'?'badge-paid':'badge-pending')+'">'+(f.status==='paid'?'Выплачено':'Ожидает')+'</span></div>';
-    r.onclick=function(){openEditFin(f.id);};il.appendChild(r);
+    r.onclick=function(){openEditFin(f.id);}; if(finHidden){r.style.filter='blur(6px)';}il.appendChild(r);
   });
   var el=document.getElementById('expense-list');
   el.innerHTML=exp.length?'':'<div class="empty-state">Нет расходов</div>';
@@ -585,7 +631,7 @@ function renderFin(){
     var r=document.createElement('div');r.className='fin-row';
     r.innerHTML='<div class="fin-row-body"><div class="fin-row-name">'+f.name+'</div>'+(f.desc?'<div class="fin-row-desc">'+f.desc+'</div>':'')+'</div>'+
       '<div class="fin-row-right"><div class="fin-amount exp-color">−'+f.amount.toLocaleString('ru-RU')+'₽</div></div>';
-    r.onclick=function(){openEditFin(f.id);};el.appendChild(r);
+    r.onclick=function(){openEditFin(f.id);}; if(finHidden){r.style.filter='blur(6px)';}el.appendChild(r);
   });
 }
 function openFinModal(type){
@@ -726,7 +772,233 @@ function toggleQr(id){
   box.classList.toggle('open');
   if(toggle){toggle.textContent=isOpen?'показать QR':'скрыть QR';}
 }
+
+/* PIN Logic */
+var PIN_KEY='re3_pin';
+var pinInput='';
+var pinSetupInput='';
+var pinSetupStep=1;
+var pinSetupFirst='';
+
+function getPin(){return localStorage.getItem(PIN_KEY)||'';}
+
+function toggleFinHide(){
+  finHidden=!finHidden;
+  renderFin();
+}
+
+function openPin(){
+  pinInput='';
+  updatePinDots('pd',pinInput);
+  document.getElementById('pin-error').textContent='';
+  document.getElementById('ov-pin').classList.add('open');
+}
+
+function pinKey(k){
+  if(pinInput.length>=4) return;
+  pinInput+=k;
+  updatePinDots('pd',pinInput);
+  if(pinInput.length===4){
+    setTimeout(function(){
+      if(pinInput===getPin()){
+        closeOv('ov-pin');
+        pinInput='';
+        if(pendingPageBtn){
+          doShowPage('finance',pendingPageBtn);
+          pendingPageBtn=null;
+        } else {
+          finHidden=false;
+          renderFin();
+        }
+      } else {
+        document.getElementById('pin-error').textContent='Неверный PIN';
+        pinInput='';
+        updatePinDots('pd',pinInput);
+      }
+    },200);
+  }
+}
+
+function pinClear(){
+  pinInput=pinInput.slice(0,-1);
+  updatePinDots('pd',pinInput);
+  document.getElementById('pin-error').textContent='';
+}
+
+function updatePinDots(prefix,val){
+  for(var i=0;i<4;i++){
+    var dot=document.getElementById(prefix+i);
+    if(dot) dot.style.background=i<val.length?'#c97070':'rgba(255,255,255,.15)';
+  }
+}
+
+function showPinSetup(){
+  pinSetupInput='';
+  pinSetupStep=1;
+  pinSetupFirst='';
+  document.getElementById('pin-setup-title').textContent='Установи PIN';
+  document.getElementById('pin-setup-sub').textContent='Введи новый 4-значный PIN';
+  document.getElementById('pin-setup-error').textContent='';
+  updatePinDots('psd',pinSetupInput);
+  closeOv('ov-pin');
+  document.getElementById('ov-pin-setup').classList.add('open');
+}
+
+function pinSetupKey(k){
+  if(pinSetupInput.length>=4) return;
+  pinSetupInput+=k;
+  updatePinDots('psd',pinSetupInput);
+  if(pinSetupInput.length===4){
+    setTimeout(function(){
+      if(pinSetupStep===1){
+        pinSetupFirst=pinSetupInput;
+        pinSetupInput='';
+        pinSetupStep=2;
+        document.getElementById('pin-setup-title').textContent='Повтори PIN';
+        document.getElementById('pin-setup-sub').textContent='Введи PIN ещё раз для подтверждения';
+        updatePinDots('psd',pinSetupInput);
+      } else {
+        if(pinSetupInput===pinSetupFirst){
+          localStorage.setItem(PIN_KEY,pinSetupInput);
+          closeOv('ov-pin-setup');
+          if(pendingPageBtn){
+            doShowPage('finance',pendingPageBtn);
+            pendingPageBtn=null;
+          } else {
+            finHidden=false;
+            renderFin();
+          }
+        } else {
+          document.getElementById('pin-setup-error').textContent='PIN не совпадает, попробуй снова';
+          pinSetupInput='';
+          pinSetupStep=1;
+          pinSetupFirst='';
+          document.getElementById('pin-setup-title').textContent='Установи PIN';
+          document.getElementById('pin-setup-sub').textContent='Введи новый 4-значный PIN';
+          updatePinDots('psd',pinSetupInput);
+        }
+      }
+    },200);
+  }
+}
+
+function pinSetupClear(){
+  pinSetupInput=pinSetupInput.slice(0,-1);
+  updatePinDots('psd',pinSetupInput);
+  document.getElementById('pin-setup-error').textContent='';
+}
+
+
+var pinChangeInput='';
+var pinChangeStep=1;
+var pinChangeNewFirst='';
+
+function showPinChange(){
+  pinChangeInput='';
+  pinChangeStep=1;
+  pinChangeNewFirst='';
+  document.getElementById('pin-change-title').textContent='Изменить PIN';
+  document.getElementById('pin-change-sub').textContent='Введи текущий PIN';
+  document.getElementById('pin-change-error').textContent='';
+  updatePinDots('pcd',pinChangeInput);
+  closeOv('ov-pin');
+  document.getElementById('ov-pin-change').classList.add('open');
+}
+
+function pinChangeKey(k){
+  if(pinChangeInput.length>=4) return;
+  pinChangeInput+=k;
+  updatePinDots('pcd',pinChangeInput);
+  if(pinChangeInput.length===4){
+    setTimeout(function(){
+      if(pinChangeStep===1){
+        if(pinChangeInput!==getPin()){
+          document.getElementById('pin-change-error').textContent='Неверный PIN';
+          pinChangeInput='';
+          updatePinDots('pcd',pinChangeInput);
+          return;
+        }
+        pinChangeStep=2;
+        pinChangeInput='';
+        document.getElementById('pin-change-title').textContent='Новый PIN';
+        document.getElementById('pin-change-sub').textContent='Введи новый PIN';
+        document.getElementById('pin-change-error').textContent='';
+        updatePinDots('pcd',pinChangeInput);
+      } else if(pinChangeStep===2){
+        pinChangeNewFirst=pinChangeInput;
+        pinChangeInput='';
+        pinChangeStep=3;
+        document.getElementById('pin-change-title').textContent='Повтори PIN';
+        document.getElementById('pin-change-sub').textContent='Введи новый PIN ещё раз';
+        document.getElementById('pin-change-error').textContent='';
+        updatePinDots('pcd',pinChangeInput);
+      } else {
+        if(pinChangeInput===pinChangeNewFirst){
+          localStorage.setItem(PIN_KEY,pinChangeInput);
+          closeOv('ov-pin-change');
+          openPin();
+        } else {
+          document.getElementById('pin-change-error').textContent='PIN не совпадает';
+          pinChangeInput='';
+          pinChangeStep=2;
+          pinChangeNewFirst='';
+          document.getElementById('pin-change-title').textContent='Новый PIN';
+          document.getElementById('pin-change-sub').textContent='Введи новый PIN';
+          updatePinDots('pcd',pinChangeInput);
+        }
+      }
+    },200);
+  }
+}
+
+function pinChangeClear(){
+  pinChangeInput=pinChangeInput.slice(0,-1);
+  updatePinDots('pcd',pinChangeInput);
+  document.getElementById('pin-change-error').textContent='';
+}
+
+function showPinReset(){
+  closeOv('ov-pin');
+  document.getElementById('ov-pin-reset').classList.add('open');
+}
+
+function confirmPinReset(){
+  localStorage.removeItem(PIN_KEY);
+  fins=[];
+  save('re3_fins',fins);
+  closeOv('ov-pin-reset');
+  showPinSetup();
+}
+
 function closeOv(id){document.getElementById(id).classList.remove('open');}
+
+/* Swipe navigation */
+var pages=['home','notes','calendar','finance'];
+var currentPage=0;
+var touchStartX=0;
+var touchStartY=0;
+
+document.addEventListener('touchstart',function(e){
+  touchStartX=e.touches[0].clientX;
+  touchStartY=e.touches[0].clientY;
+},{passive:true});
+
+document.addEventListener('touchend',function(e){
+  var dx=e.changedTouches[0].clientX-touchStartX;
+  var dy=e.changedTouches[0].clientY-touchStartY;
+  // Only horizontal swipe, ignore if vertical scroll
+  if(Math.abs(dx)<60||Math.abs(dy)>Math.abs(dx)) return;
+  // Ignore swipe if modal is open
+  if(document.querySelector('.ov.open')) return;
+  var nextPage;
+  if(dx<0 && currentPage<pages.length-1){
+    nextPage=currentPage+1;
+  } else if(dx>0 && currentPage>0){
+    nextPage=currentPage-1;
+  } else return;
+  var btn=document.querySelectorAll('.nav-btn')[nextPage];
+  showPage(pages[nextPage],btn);
+},{passive:true});
 ['ov-home','ov-daypick','ov-release','ov-reel','ov-fin','ov-folder','ov-note'].forEach(function(id){
   document.getElementById(id).onclick=function(e){if(e.target===document.getElementById(id))closeOv(id);};
 });
@@ -736,6 +1008,114 @@ loadAll(function(){
   renderCal();
   document.getElementById('page-home').style.display='flex';
 });
+
+['ov-pin','ov-pin-setup','ov-pin-change','ov-pin-reset'].forEach(function(id){
+  var el=document.getElementById(id);
+  if(el){el.onclick=function(e){if(e.target===el)closeOv(id);};}
+});
 </script>
+
+<!-- MODAL: PIN -->
+<div class="ov" id="ov-pin">
+  <div class="modal" style="max-width:320px;text-align:center">
+    <div class="modal-title" style="text-align:center">Финансы</div>
+    <div style="font-size:13px;color:rgba(255,255,255,.4);margin-bottom:20px">Введи PIN для просмотра</div>
+    <div style="display:flex;gap:10px;justify-content:center;margin-bottom:16px" id="pin-dots">
+      <div style="width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.15);transition:background .15s" id="pd0"></div>
+      <div style="width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.15);transition:background .15s" id="pd1"></div>
+      <div style="width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.15);transition:background .15s" id="pd2"></div>
+      <div style="width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.15);transition:background .15s" id="pd3"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:240px;margin:0 auto">
+      <button class="pin-key" onclick="pinKey('1')">1</button>
+      <button class="pin-key" onclick="pinKey('2')">2</button>
+      <button class="pin-key" onclick="pinKey('3')">3</button>
+      <button class="pin-key" onclick="pinKey('4')">4</button>
+      <button class="pin-key" onclick="pinKey('5')">5</button>
+      <button class="pin-key" onclick="pinKey('6')">6</button>
+      <button class="pin-key" onclick="pinKey('7')">7</button>
+      <button class="pin-key" onclick="pinKey('8')">8</button>
+      <button class="pin-key" onclick="pinKey('9')">9</button>
+      <button class="pin-key pin-key-ghost" onclick="pinClear()">⌫</button>
+      <button class="pin-key" onclick="pinKey('0')">0</button>
+      <button class="pin-key pin-key-ghost" onclick="closeOv('ov-pin')">✕</button>
+    </div>
+    <div id="pin-error" style="font-size:12px;color:#c97070;margin-top:14px;min-height:18px"></div>
+    <div style="margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.07);display:flex;justify-content:space-between">
+      <button onclick="showPinChange()" style="background:none;border:none;color:rgba(255,255,255,.25);font-size:11px;cursor:pointer;font-family:inherit">Изменить PIN</button>
+      <button onclick="showPinReset()" style="background:none;border:none;color:rgba(255,255,255,.25);font-size:11px;cursor:pointer;font-family:inherit">Забыл PIN</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: PIN Setup -->
+<div class="ov" id="ov-pin-setup">
+  <div class="modal" style="max-width:320px;text-align:center">
+    <div class="modal-title" id="pin-setup-title" style="text-align:center">Установи PIN</div>
+    <div style="font-size:13px;color:rgba(255,255,255,.4);margin-bottom:20px" id="pin-setup-sub">Введи новый 4-значный PIN</div>
+    <div style="display:flex;gap:10px;justify-content:center;margin-bottom:16px" id="pin-setup-dots">
+      <div style="width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.15);transition:background .15s" id="psd0"></div>
+      <div style="width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.15);transition:background .15s" id="psd1"></div>
+      <div style="width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.15);transition:background .15s" id="psd2"></div>
+      <div style="width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.15);transition:background .15s" id="psd3"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:240px;margin:0 auto">
+      <button class="pin-key" onclick="pinSetupKey('1')">1</button>
+      <button class="pin-key" onclick="pinSetupKey('2')">2</button>
+      <button class="pin-key" onclick="pinSetupKey('3')">3</button>
+      <button class="pin-key" onclick="pinSetupKey('4')">4</button>
+      <button class="pin-key" onclick="pinSetupKey('5')">5</button>
+      <button class="pin-key" onclick="pinSetupKey('6')">6</button>
+      <button class="pin-key" onclick="pinSetupKey('7')">7</button>
+      <button class="pin-key" onclick="pinSetupKey('8')">8</button>
+      <button class="pin-key" onclick="pinSetupKey('9')">9</button>
+      <button class="pin-key pin-key-ghost" onclick="pinSetupClear()">⌫</button>
+      <button class="pin-key" onclick="pinSetupKey('0')">0</button>
+      <button class="pin-key pin-key-ghost" onclick="closeOv('ov-pin-setup')">✕</button>
+    </div>
+    <div id="pin-setup-error" style="font-size:12px;color:#c97070;margin-top:14px;min-height:18px"></div>
+  </div>
+</div>
+
+<!-- MODAL: PIN Change -->
+<div class="ov" id="ov-pin-change">
+  <div class="modal" style="max-width:320px;text-align:center">
+    <div class="modal-title" id="pin-change-title" style="text-align:center">Изменить PIN</div>
+    <div style="font-size:13px;color:rgba(255,255,255,.4);margin-bottom:20px" id="pin-change-sub">Введи текущий PIN</div>
+    <div style="display:flex;gap:10px;justify-content:center;margin-bottom:16px">
+      <div style="width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.15);transition:background .15s" id="pcd0"></div>
+      <div style="width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.15);transition:background .15s" id="pcd1"></div>
+      <div style="width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.15);transition:background .15s" id="pcd2"></div>
+      <div style="width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.15);transition:background .15s" id="pcd3"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:240px;margin:0 auto">
+      <button class="pin-key" onclick="pinChangeKey('1')">1</button>
+      <button class="pin-key" onclick="pinChangeKey('2')">2</button>
+      <button class="pin-key" onclick="pinChangeKey('3')">3</button>
+      <button class="pin-key" onclick="pinChangeKey('4')">4</button>
+      <button class="pin-key" onclick="pinChangeKey('5')">5</button>
+      <button class="pin-key" onclick="pinChangeKey('6')">6</button>
+      <button class="pin-key" onclick="pinChangeKey('7')">7</button>
+      <button class="pin-key" onclick="pinChangeKey('8')">8</button>
+      <button class="pin-key" onclick="pinChangeKey('9')">9</button>
+      <button class="pin-key pin-key-ghost" onclick="pinChangeClear()">⌫</button>
+      <button class="pin-key" onclick="pinChangeKey('0')">0</button>
+      <button class="pin-key pin-key-ghost" onclick="closeOv('ov-pin-change')">✕</button>
+    </div>
+    <div id="pin-change-error" style="font-size:12px;color:#c97070;margin-top:14px;min-height:18px"></div>
+  </div>
+</div>
+
+<!-- MODAL: PIN Reset -->
+<div class="ov" id="ov-pin-reset">
+  <div class="modal" style="max-width:320px;text-align:center">
+    <div class="modal-title" style="text-align:center">Забыл PIN</div>
+    <div style="font-size:13px;color:rgba(255,255,255,.4);margin-bottom:20px;line-height:1.6">Сброс PIN удалит все финансовые данные.<br>Продолжить?</div>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button class="btn-ghost" onclick="closeOv('ov-pin-reset')">Отмена</button>
+      <button class="btn-danger" onclick="confirmPinReset()">Сбросить</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
