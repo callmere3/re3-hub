@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- RE3 Hub v1.9.2 | 2026-06-28 -->
+<!-- RE3 Hub v1.9.3 | 2026-06-28 -->
 <html lang="ru" data-theme="dark">
 <head>
 <meta charset="UTF-8">
@@ -1311,7 +1311,6 @@ var currentPage=0;
 var touchStartX=0;
 var touchStartY=0;
 var touchStartedInNav=false;
-var NAV_HEIGHT=60;
 
 /* Блокируем pinch-zoom (gesturestart — Safari) */
 document.addEventListener('gesturestart',function(e){e.preventDefault();},{passive:false});
@@ -1325,7 +1324,9 @@ document.addEventListener('touchmove',function(e){
 document.addEventListener('touchstart',function(e){
   touchStartX=e.touches[0].clientX;
   touchStartY=e.touches[0].clientY;
-  touchStartedInNav=touchStartY<NAV_HEIGHT;
+  var nav=document.querySelector('.nav');
+  var navBottom=nav?nav.getBoundingClientRect().bottom:0;
+  touchStartedInNav=touchStartY<navBottom;
 },{passive:true});
 
 document.addEventListener('touchend',function(e){
