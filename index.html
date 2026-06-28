@@ -195,6 +195,11 @@ body{padding-bottom:env(safe-area-inset-bottom)}
 .pin-key:active{background:rgba(255,255,255,.2);transform:scale(.95)}
 .pin-key-ghost{background:none;border-color:transparent;color:rgba(255,255,255,.4)}
 .pin-key-ghost:hover{background:rgba(255,255,255,.06)}
+
+.faceid-btn{width:100%;margin-top:12px;padding:12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:12px;color:rgba(255,255,255,.7);font-family:inherit;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s}
+.faceid-btn:hover{background:rgba(255,255,255,.1);color:#fff}
+.faceid-btn svg{width:20px;height:20px;flex-shrink:0}
+
 </style>
 </head>
 <body>
@@ -815,6 +820,9 @@ function openPin(){
   updatePinDots('pd',pinInput);
   document.getElementById('pin-error').textContent='';
   document.getElementById('ov-pin').classList.add('open');
+  showFaceIdBtn();
+  var stored=localStorage.getItem(FACEID_KEY);
+  if(stored) setTimeout(tryFaceId, 300);
 }
 
 function pinKey(k){
@@ -825,14 +833,27 @@ function pinKey(k){
     setTimeout(function(){
       checkPin(pinInput,function(ok){
         if(ok){
-          closeOv('ov-pin');
           pinInput='';
-          if(pendingPageBtn){
-            doShowPage('finance',pendingPageBtn);
-            pendingPageBtn=null;
+          if(!localStorage.getItem(FACEID_KEY)){
+            registerFaceId(function(){
+              closeOv('ov-pin');
+              if(pendingPageBtn){
+                doShowPage('finance',pendingPageBtn);
+                pendingPageBtn=null;
+              } else {
+                finHidden=false;
+                renderFin();
+              }
+            });
           } else {
-            finHidden=false;
-            renderFin();
+            closeOv('ov-pin');
+            if(pendingPageBtn){
+              doShowPage('finance',pendingPageBtn);
+              pendingPageBtn=null;
+            } else {
+              finHidden=false;
+              renderFin();
+            }
           }
         } else {
           document.getElementById('pin-error').textContent='Неверный PIN';
@@ -1000,6 +1021,82 @@ function confirmPinReset(){
   showPinSetup();
 }
 
+
+/* Face ID / WebAuthn */
+var FACEID_KEY='re3_faceid_cred';
+
+function isBiometricAvailable(){
+  return window.PublicKeyCredential && 
+         typeof PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable === 'function';
+}
+
+function checkFaceIdAvailable(cb){
+  if(!isBiometricAvailable()){cb(false);return;}
+  PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable().then(cb).catch(function(){cb(false);});
+}
+
+function showFaceIdBtn(){
+  checkFaceIdAvailable(function(avail){
+    var stored=localStorage.getItem(FACEID_KEY);
+    var wrap=document.getElementById('faceid-btn-wrap');
+    if(wrap) wrap.style.display=(avail&&stored)?'block':'none';
+  });
+}
+
+function tryFaceId(){
+  var credData=localStorage.getItem(FACEID_KEY);
+  if(!credData){return;}
+  var credId=Uint8Array.from(atob(credData),function(c){return c.charCodeAt(0);});
+  var challenge=new Uint8Array(32);
+  crypto.getRandomValues(challenge);
+  navigator.credentials.get({
+    publicKey:{
+      challenge:challenge,
+      allowCredentials:[{type:'public-key',id:credId,transports:['internal']}],
+      userVerification:'required',
+      timeout:60000
+    }
+  }).then(function(){
+    closeOv('ov-pin');
+    if(pendingPageBtn){
+      doShowPage('finance',pendingPageBtn);
+      pendingPageBtn=null;
+    } else {
+      finHidden=false;
+      renderFin();
+    }
+  }).catch(function(e){
+    document.getElementById('pin-error').textContent='Face ID не прошёл, введи PIN';
+  });
+}
+
+function registerFaceId(cb){
+  checkFaceIdAvailable(function(avail){
+    if(!avail){if(cb)cb();return;}
+    if(!confirm('Включить Face ID для входа в Финансы?')){if(cb)cb();return;}
+    var challenge=new Uint8Array(32);
+    crypto.getRandomValues(challenge);
+    var userId=new Uint8Array(16);
+    crypto.getRandomValues(userId);
+    navigator.credentials.create({
+      publicKey:{
+        challenge:challenge,
+        rp:{name:'RE3 Hub',id:location.hostname},
+        user:{id:userId,name:'re3',displayName:'RE3'},
+        pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}],
+        authenticatorSelection:{authenticatorAttachment:'platform',userVerification:'required'},
+        timeout:60000
+      }
+    }).then(function(cred){
+      var b64=btoa(String.fromCharCode.apply(null,new Uint8Array(cred.rawId)));
+      localStorage.setItem(FACEID_KEY,b64);
+      if(cb)cb();
+    }).catch(function(){
+      if(cb)cb();
+    });
+  });
+}
+
 function closeOv(id){document.getElementById(id).classList.remove('open');}
 
 /* Swipe navigation */
@@ -1071,6 +1168,18 @@ loadAll(function(){
       <button class="pin-key pin-key-ghost" onclick="closeOv('ov-pin')">✕</button>
     </div>
     <div id="pin-error" style="font-size:12px;color:#c97070;margin-top:14px;min-height:18px"></div>
+    <div id="faceid-btn-wrap" style="display:none">
+      <button class="faceid-btn" onclick="tryFaceId()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M7 3H5a2 2 0 0 0-2 2v2M17 3h2a2 2 0 0 1 2 2v2M7 21H5a2 2 0 0 1-2-2v-2M17 21h2a2 2 0 0 0 2-2v-2"/>
+          <circle cx="9" cy="10" r="1" fill="currentColor"/>
+          <circle cx="15" cy="10" r="1" fill="currentColor"/>
+          <path d="M9 16s1 1.5 3 1.5 3-1.5 3-1.5"/>
+          <path d="M12 6v1M12 17v1"/>
+        </svg>
+        Войти через Face ID
+      </button>
+    </div>
     <div style="margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.07);display:flex;justify-content:space-between">
       <button onclick="showPinChange()" style="background:none;border:none;color:rgba(255,255,255,.25);font-size:11px;cursor:pointer;font-family:inherit">Изменить PIN</button>
       <button onclick="showPinReset()" style="background:none;border:none;color:rgba(255,255,255,.25);font-size:11px;cursor:pointer;font-family:inherit">Забыл PIN</button>
