@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>RE3 — Визитка</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;
+  background:#0e0e0e;
+  color:#fff;
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:24px 16px calc(24px + env(safe-area-inset-bottom));
+}
+
+.card{
+  background:#111;
+  border-radius:20px;
+  width:100%;
+  max-width:420px;
+  overflow:hidden;
+  box-shadow:0 4px 32px rgba(0,0,0,.7);
+}
+
+.cover{
+  width:100%;
+  height:220px;
+  background:linear-gradient(160deg,#1a1230 0%,#0e0e0e 100%);
+  position:relative;
+  overflow:hidden;
+}
+.cover-img{width:100%;height:100%;object-fit:cover;object-position:center 15%;display:block}
+.cover-gradient{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(14,14,14,0) 30%,rgba(14,14,14,.85) 80%,rgba(14,14,14,1) 100%)}
+.cover-initials{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:52px;font-weight:800;color:rgba(255,255,255,.08);letter-spacing:-2px}
+
+.body{padding:0 24px 28px;margin-top:-32px;position:relative}
+.name{font-size:26px;font-weight:800;color:#fff;letter-spacing:-.6px;margin-bottom:4px;line-height:1.1}
+.role{font-size:11px;color:rgba(255,255,255,.45);font-weight:500;letter-spacing:.6px;text-transform:uppercase;padding-top:6px;margin-bottom:8px}
+.bio{font-size:12px;color:rgba(255,255,255,.4);line-height:1.6;margin-bottom:22px;border-top:1px solid rgba(255,255,255,.07);padding-top:16px}
+
+.social-block{padding-bottom:18px;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:0}
+.social-block:last-child{border-bottom:none;padding-bottom:0}
+.net-label{font-size:10px;font-weight:600;color:rgba(255,255,255,.25);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px}
+.slink{display:flex;align-items:center;justify-content:center;font-size:13px;color:rgba(255,255,255,.5);text-decoration:none;transition:color .2s}
+.slink:hover{color:#fff}
+
+.qr-btn{width:100%;background:#9b3030;border:none;border-radius:10px;cursor:pointer;color:#fff;font-family:inherit;font-size:12px;font-weight:600;padding:10px 14px;display:flex;align-items:center;justify-content:center;gap:6px;transition:opacity .15s;margin-top:8px}
+.qr-btn:hover{opacity:.85}
+.qr-btn svg{width:14px;height:14px;transition:transform .3s;flex-shrink:0}
+.qr-btn.open svg{transform:rotate(180deg)}
+.qr-box{max-height:0;overflow:hidden;transition:max-height .35s ease,margin-top .35s ease;display:flex;justify-content:center}
+.qr-box.open{max-height:160px;margin-top:8px}
+.qr-box img{width:120px;height:120px;object-fit:cover;border-radius:10px}
+.qr-box-empty{font-size:9px;color:rgba(255,255,255,.2);text-align:center;padding:8px;line-height:1.5}
+
+.social-links{display:flex;flex-direction:column;gap:14px}
+
+.loading{text-align:center;padding:60px 0;color:rgba(255,255,255,.3);font-size:13px}
+.dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#9b3030;opacity:.3;animation:pulse 1s ease-in-out infinite}
+.dot:nth-child(2){animation-delay:.2s}
+.dot:nth-child(3){animation-delay:.4s}
+@keyframes pulse{0%,100%{opacity:.3;transform:scale(1)}50%{opacity:1;transform:scale(1.4)}}
+</style>
+</head>
+<body>
+
+<div class="card" id="card">
+  <div class="loading">
+    <div style="margin-bottom:12px">
+      <span class="dot"></span>
+      <span class="dot" style="margin:0 4px"></span>
+      <span class="dot"></span>
+    </div>
+  </div>
+</div>
+
+<script>
+var SCRIPT_URL='https://script.google.com/macros/s/AKfycbxWaVLP8OUKgyse3dptdWcncHD4nMKF6MIMtYQguTqfbInNyV2trHD51XuS_RYLACbq/exec';
+
+function toggleQr(boxId,btnId){
+  var box=document.getElementById(boxId);
+  var btn=document.getElementById(btnId);
+  if(!box) return;
+  box.classList.toggle('open');
+  if(btn){
+    btn.classList.toggle('open');
+    btn.textContent=box.classList.contains('open')?'Скрыть QR':'Показать QR';
+    if(box.classList.contains('open')){
+      var chevron='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg>';
+      btn.innerHTML=chevron+'Скрыть QR';
+    } else {
+      var chevron2='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>';
+      btn.innerHTML=chevron2+'Показать QR';
+    }
+  }
+}
+
+function render(h){
+  var initials=(h.name||'RE3').toUpperCase();
+  var coverHtml=h.photo
+    ?'<img class="cover-img" src="'+h.photo+'" alt=""><div class="cover-gradient"></div>'
+    :'<div class="cover-initials">'+initials+'</div>';
+
+  var links='';
+  if(h.ig){
+    var chevronDown='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>';
+    var igQr=h['ig-qr']?'<img src="'+h['ig-qr']+'" alt="IG QR">':'<div class="qr-box-empty">QR не добавлен</div>';
+    links+='<div class="social-block">'+
+      '<div class="net-label">Instagram</div>'+
+      '<a class="slink" href="'+h.ig+'" target="_blank">'+h.ig.replace(/https?:\/\/(www\.)?/,'')+'</a>'+
+      '<button class="qr-btn" id="qr-btn-ig" onclick="toggleQr(\'qr-ig\',\'qr-btn-ig\')">'+chevronDown+'Показать QR</button>'+
+      '<div class="qr-box" id="qr-ig">'+igQr+'</div>'+
+      '</div>';
+  }
+  if(h.tg){
+    var chevronDown2='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>';
+    var tgQr=h['tg-qr']?'<img src="'+h['tg-qr']+'" alt="TG QR">':'<div class="qr-box-empty">QR не добавлен</div>';
+    links+='<div class="social-block">'+
+      '<div class="net-label">Telegram</div>'+
+      '<a class="slink" href="'+h.tg+'" target="_blank">'+h.tg.replace(/https?:\/\//,'')+'</a>'+
+      '<button class="qr-btn" id="qr-btn-tg" onclick="toggleQr(\'qr-tg\',\'qr-btn-tg\')">'+chevronDown2+'Показать QR</button>'+
+      '<div class="qr-box" id="qr-tg">'+tgQr+'</div>'+
+      '</div>';
+  }
+
+  var bioHtml=h.bio?'<div class="bio">'+h.bio+'</div>':'';
+
+  document.getElementById('card').innerHTML=
+    '<div class="cover">'+coverHtml+'</div>'+
+    '<div class="body">'+
+    '<div class="name">'+(h.name||'RE3')+'</div>'+
+    '<div class="role">'+(h.role||'')+'</div>'+
+    bioHtml+
+    '<div class="social-links">'+links+'</div>'+
+    '</div>';
+
+  document.title=(h.name||'RE3')+' — Визитка';
+}
+
+fetch(SCRIPT_URL+'?key=re3_home')
+  .then(function(r){return r.text();})
+  .then(function(t){
+    try{
+      var data=JSON.parse(t);
+      if(data && data.name) render(data);
+      else throw new Error('no data');
+    } catch(e){
+      render({name:'RE3',role:'Music Producer · Mixing engineer · Artist',bio:'Credits: Люся Чеботина, Jakone, TATAR, mzlff, СТС, ТНТ',ig:'https://instagram.com/re3_music',tg:'https://t.me/re3_music'});
+    }
+  })
+  .catch(function(){
+    render({name:'RE3',role:'Music Producer · Mixing engineer · Artist',bio:'Credits: Люся Чеботина, Jakone, TATAR, mzlff, СТС, ТНТ',ig:'https://instagram.com/re3_music',tg:'https://t.me/re3_music'});
+  });
+</script>
+</body>
+</html>
