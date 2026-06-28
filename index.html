@@ -66,9 +66,14 @@ body{padding-bottom:env(safe-area-inset-bottom)}
 .social-link:hover{color:#fff}
 .social-net-label{font-size:10px;font-weight:600;color:rgba(255,255,255,.25);text-transform:uppercase;letter-spacing:.7px;margin-bottom:2px}
 .social-icon{display:none}
-.qr-box{width:100%;display:flex;justify-content:center;margin-top:4px}
-.qr-box img{width:130px;height:130px;object-fit:cover;border-radius:10px}
+.qr-box{width:100%;display:flex;justify-content:center;margin-top:0;max-height:0;overflow:hidden;transition:max-height .35s ease,margin-top .35s ease}
+.qr-box.open{max-height:160px;margin-top:8px}
+.qr-box img{width:120px;height:120px;object-fit:cover;border-radius:10px}
 .qr-box-empty{font-size:9px;color:rgba(255,255,255,.2);text-align:center;padding:8px;line-height:1.5}
+.qr-toggle-btn{width:100%;background:#9b3030;border:none;border-radius:10px;cursor:pointer;color:#fff;font-family:inherit;font-size:12px;font-weight:600;padding:10px 14px;display:flex;align-items:center;justify-content:center;gap:6px;transition:opacity .15s;margin-top:6px}
+.qr-toggle-btn:hover{opacity:.85}
+.qr-toggle-btn svg{width:14px;height:14px;transition:transform .3s;flex-shrink:0}
+.qr-toggle-btn.open svg{transform:rotate(180deg)}
 .qr-toggle{font-size:10px;color:rgba(255,255,255,.25);letter-spacing:.4px;text-transform:uppercase;cursor:pointer;transition:color .2s;text-align:center;margin-top:2px;user-select:none}
 .qr-toggle:hover{color:rgba(255,255,255,.5)}
 .edit-home-btn{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:5px 12px;cursor:pointer;font-size:11px;color:rgba(255,255,255,.5);font-family:inherit;transition:all .2s;z-index:2}
@@ -483,11 +488,11 @@ function renderHome(){
   var links='';
   if(h.ig){
     var igQrContent=h['ig-qr']?'<img src="'+h['ig-qr']+'" alt="IG QR">':'<div class="qr-box-empty">Добавь QR в редакторе</div>';
-    links+='<div class="social-block"><div class="social-net-label">Instagram</div><a class="social-link" href="'+h.ig+'" target="_blank">'+h.ig.replace(/https?:\/\/(www\.)?/,'')+'</a><div class="qr-box">'+igQrContent+'</div></div>';
+    links+='<div class="social-block"><div class="social-net-label">Instagram</div><a class="social-link" href="'+h.ig+'" target="_blank">'+h.ig.replace(/https?:\/\/(www\.)?/,'')+'</a><button class="qr-toggle-btn" id="qr-btn-ig" onclick="toggleQr(\'qr-ig\',\'qr-btn-ig\')">Показать QR</button><div class="qr-box" id="qr-ig">'+igQrContent+'</div></div>';
   }
   if(h.tg){
     var tgQrContent=h['tg-qr']?'<img src="'+h['tg-qr']+'" alt="TG QR">':'<div class="qr-box-empty">Добавь QR в редакторе</div>';
-    links+='<div class="social-block"><div class="social-net-label">Telegram</div><a class="social-link" href="'+h.tg+'" target="_blank">'+h.tg.replace(/https?:\/\//,'')+'</a><div class="qr-box">'+tgQrContent+'</div></div>';
+    links+='<div class="social-block"><div class="social-net-label">Telegram</div><a class="social-link" href="'+h.tg+'" target="_blank">'+h.tg.replace(/https?:\/\//,'')+'</a><button class="qr-toggle-btn" id="qr-btn-tg" onclick="toggleQr(\'qr-tg\',\'qr-btn-tg\')">Показать QR</button><div class="qr-box" id="qr-tg">'+tgQrContent+'</div></div>';
   }
   document.getElementById('home-card').innerHTML=
     '<div class="home-hero">'+
@@ -1107,6 +1112,17 @@ function registerFaceId(cb){
       if(cb)cb();
     });
   });
+}
+
+function toggleQr(boxId,btnId){
+  var box=document.getElementById(boxId);
+  var btn=document.getElementById(btnId);
+  if(!box) return;
+  box.classList.toggle('open');
+  if(btn){
+    btn.classList.toggle('open');
+    btn.textContent=box.classList.contains('open')?'Скрыть':'Показать QR';
+  }
 }
 
 function closeOv(id){document.getElementById(id).classList.remove('open');}
