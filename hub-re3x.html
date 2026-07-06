@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- RE3 Hub v1.9.3 | 2026-06-28 -->
+<!-- RE3 Hub v1.9.4 | 2026-07-06 | security fix: token auth for GAS backend, server-side PIN gate for finance data, XSS escaping -->
 <html lang="ru" data-theme="dark">
 <head>
 <meta charset="UTF-8">
@@ -419,6 +419,10 @@ body{padding-bottom:env(safe-area-inset-bottom)}
 
 <script>
 var SCRIPT_URL='https://script.google.com/macros/s/AKfycbxWaVLP8OUKgyse3dptdWcncHD4nMKF6MIMtYQguTqfbInNyV2trHD51XuS_RYLACbq/exec';
+// Секретный токен — должен точно совпадать со значением TOKEN в Script Properties
+// твоего Apps Script проекта. Это не панацея (он всё ещё виден в исходнике),
+// но блокирует случайных сканеров/ботов и требует целенаправленной атаки.
+var GS_TOKEN='wG5u4wp8iupIbCg8WbUghKxoE_IuLMSz';
 var theme='dark';
 var home={"name":"RE3","role":"Music Producer · Mixing engineer · Artist","bio":"Credits: Люся Чеботина, Jakone, TATAR, mzlff, СТС, ТНТ","ig":"https://instagram.com/re3_music","tg":"https://t.me/re3_music","ym":"","photo":"","ig-qr":"","tg-qr":""};
 var reels=[],fins=[],folders=[],notes=[],releases=[];
@@ -426,29 +430,59 @@ var cur=new Date(); cur.setDate(1);
 var releid=null,pickedDate='',reid=null,finEid=null,finType='income',neid=null;
 var notesView='folders',activeFolderId=null;
 
+// Экранирование пользовательских строк перед вставкой в innerHTML —
+// защита от хранимого XSS (имена, описания, заметки и т.п.)
+function escapeHtml(s){
+  if(s===null||s===undefined) return '';
+  return String(s).replace(/[&<>"']/g,function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+
 function showSyncing(){var el=document.getElementById('sync-status');if(el){el.textContent='Сохранение...';el.style.opacity='1';}}
 function hideSyncing(){var el=document.getElementById('sync-status');if(el){el.textContent='Сохранено ✓';setTimeout(function(){el.style.opacity='0';},1500);}}
 function showLoading(show){var el=document.getElementById('splash');if(el){el.style.display=show?'flex':'none';}}
 
-function gsGet(key,cb){
-  fetch(SCRIPT_URL+'?key='+key)
+function gsGet(key,cb,extraQuery){
+  var qs='?token='+encodeURIComponent(GS_TOKEN)+'&key='+encodeURIComponent(key)+(extraQuery||'');
+  fetch(SCRIPT_URL+qs)
     .then(function(r){return r.text();})
-    .then(function(t){try{cb(JSON.parse(t));}catch(e){cb(null);}})
+    .then(function(t){
+      try{
+        var parsed=JSON.parse(t);
+        if(parsed && typeof parsed==='object' && parsed.error){cb(null,parsed.error);return;}
+        cb(parsed);
+      }catch(e){cb(null);}
+    })
     .catch(function(){cb(null);});
 }
 
-function gsSave(key,val){
+function gsSave(key,val,extraBody,cb){
   showSyncing();
-  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({key:key,value:JSON.stringify(val)})})
-    .then(function(){hideSyncing();})
-    .catch(function(){hideSyncing();});
+  var body=Object.assign({token:GS_TOKEN,key:key,value:JSON.stringify(val)},extraBody||{});
+  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify(body)})
+    .then(function(r){return r.text();})
+    .then(function(t){
+      hideSyncing();
+      try{var parsed=JSON.parse(t);if(cb)cb(!parsed.error,parsed.error);}catch(e){if(cb)cb(true);}
+    })
+    .catch(function(){hideSyncing();if(cb)cb(false,'network');});
 }
 
-function save(k,v){localStorage.setItem(k,JSON.stringify(v));gsSave(k,v);}
+function save(k,v){
+  localStorage.setItem(k,JSON.stringify(v));
+  if(k==='re3_fins'){
+    gsSave(k,v,{currentPin:getPin()});
+  } else {
+    gsSave(k,v);
+  }
+}
 
 function loadAll(cb){
   showLoading(true);
-  var keys=['re3_home','re3_reels','re3_fins','re3_folders','re3_notes2','re3_releases','re3_pin'];
+  // re3_fins сюда НЕ включаем — финансовые данные подгружаются отдельно,
+  // только после успешного ввода PIN и его проверки сервером (см. loadFinsWithPin).
+  var keys=['re3_home','re3_reels','re3_folders','re3_notes2','re3_releases','re3_pin'];
   var done=0;
   keys.forEach(function(k){
     gsGet(k,function(val){
@@ -460,7 +494,6 @@ function loadAll(cb){
       if(data!==null){
         if(k==='re3_home') home=data;
         else if(k==='re3_reels') reels=data;
-        else if(k==='re3_fins') fins=data;
         else if(k==='re3_folders') folders=data;
         else if(k==='re3_notes2') notes=data;
         else if(k==='re3_releases') releases=data;
@@ -470,6 +503,21 @@ function loadAll(cb){
       if(done===keys.length){showLoading(false);if(cb)cb();}
     });
   });
+}
+
+// Подгружает финансы с сервера, но только если хэш PIN совпадает с сохранённым
+// на сервере. Это и есть настоящая защита — не через UI, а через сам запрос данных.
+function loadFinsWithPin(pinHash,cb){
+  gsGet('re3_fins',function(val,err){
+    if(err==='pin_required'){cb(false);return;}
+    var data=val;
+    if(data===null){
+      var loc=localStorage.getItem('re3_fins');
+      try{data=loc?JSON.parse(loc):[];}catch(e){data=[];}
+    }
+    fins=data||[];
+    cb(true);
+  },'&pin='+encodeURIComponent(pinHash));
 }
 
 
@@ -522,9 +570,9 @@ function renderHome(){
     '<div class="home-hero">'+
     '<div class="home-cover">'+coverHtml+'</div>'+
     '<div class="home-body">'+
-    '<div class="home-name">'+(h.name||'RE3')+'</div>'+
-    '<div class="home-role">'+(h.role||'')+'</div>'+
-    (h.bio?'<div class="home-bio">'+(h.bio||'')+'</div>':'')+
+    '<div class="home-name">'+escapeHtml(h.name||'RE3')+'</div>'+
+    '<div class="home-role">'+escapeHtml(h.role||'')+'</div>'+
+    (h.bio?'<div class="home-bio">'+escapeHtml(h.bio)+'</div>':'')+
     '<div class="social-links">'+links+'</div>'+
     '<button class="share-btn" onclick="shareCard()">Поделиться визиткой</button>'+
     '</div></div>';
@@ -685,7 +733,7 @@ function renderFin(){
   il.innerHTML=inc.length?'':'<div class="empty-state">Нет доходов</div>';
   inc.forEach(function(f){
     var r=document.createElement('div');r.className='fin-row';
-    r.innerHTML='<div class="fin-row-body"><div class="fin-row-name">'+f.name+'</div>'+(f.desc?'<div class="fin-row-desc">'+f.desc+'</div>':'')+'</div>'+
+    r.innerHTML='<div class="fin-row-body"><div class="fin-row-name">'+escapeHtml(f.name)+'</div>'+(f.desc?'<div class="fin-row-desc">'+escapeHtml(f.desc)+'</div>':'')+'</div>'+
       '<div class="fin-row-right"><div class="fin-amount inc-color">+'+f.amount.toLocaleString('ru-RU')+'₽</div>'+
       '<span class="badge '+(f.status==='paid'?'badge-paid':'badge-pending')+'">'+(f.status==='paid'?'Выплачено':'Ожидает')+'</span></div>';
     r.onclick=function(){openEditFin(f.id);}; if(finHidden){r.style.filter='blur(6px)';}il.appendChild(r);
@@ -694,7 +742,7 @@ function renderFin(){
   el.innerHTML=exp.length?'':'<div class="empty-state">Нет расходов</div>';
   exp.forEach(function(f){
     var r=document.createElement('div');r.className='fin-row';
-    r.innerHTML='<div class="fin-row-body"><div class="fin-row-name">'+f.name+'</div>'+(f.desc?'<div class="fin-row-desc">'+f.desc+'</div>':'')+'</div>'+
+    r.innerHTML='<div class="fin-row-body"><div class="fin-row-name">'+escapeHtml(f.name)+'</div>'+(f.desc?'<div class="fin-row-desc">'+escapeHtml(f.desc)+'</div>':'')+'</div>'+
       '<div class="fin-row-right"><div class="fin-amount exp-color">−'+f.amount.toLocaleString('ru-RU')+'₽</div></div>';
     r.onclick=function(){openEditFin(f.id);}; if(finHidden){r.style.filter='blur(6px)';}el.appendChild(r);
   });
@@ -741,18 +789,18 @@ function renderNotes(){
     folders.forEach(function(f){
       var cnt=notes.filter(function(n){return n.folderId===f.id;}).length;
       var card=document.createElement('div');card.className='folder-card';
-      card.innerHTML='<div class="folder-emoji">📁</div><div class="folder-name">'+f.name+'</div><div class="folder-count">'+cnt+(cnt===1?' заметка':cnt<5?' заметки':' заметок')+'</div><button class="folder-del-btn" onclick="delFolder(\''+f.id+'\',event)">✕</button>';
+      card.innerHTML='<div class="folder-emoji">📁</div><div class="folder-name">'+escapeHtml(f.name)+'</div><div class="folder-count">'+cnt+(cnt===1?' заметка':cnt<5?' заметки':' заметок')+'</div><button class="folder-del-btn" onclick="delFolder(\''+f.id+'\',event)">✕</button>';
       card.onclick=function(){openFolder(f.id);};fg.appendChild(card);
     });
   } else {
     var f=folders.find(function(x){return x.id===activeFolderId;});
     var fn=notes.filter(function(n){return n.folderId===activeFolderId;});
-    root.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px"><div><button class="back-link" onclick="goBack()">← Все папки</button><div class="notes-folder-title">'+(f?f.name:'')+'</div></div><button class="btn-primary" onclick="openNoteModal()">+ Заметка</button></div><div class="notes-grid" id="notes-grid"></div>';
+    root.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px"><div><button class="back-link" onclick="goBack()">← Все папки</button><div class="notes-folder-title">'+(f?escapeHtml(f.name):'')+'</div></div><button class="btn-primary" onclick="openNoteModal()">+ Заметка</button></div><div class="notes-grid" id="notes-grid"></div>';
     var ng=document.getElementById('notes-grid');
     if(!fn.length){ng.innerHTML='<div class="empty-state">Нет заметок</div>';return;}
     fn.forEach(function(n){
       var card=document.createElement('div');card.className='note-card';
-      card.innerHTML='<div class="note-title">'+(n.title||'Без заголовка')+'</div><div class="note-body">'+(n.text||'')+'</div>';
+      card.innerHTML='<div class="note-title">'+escapeHtml(n.title||'Без заголовка')+'</div><div class="note-body">'+escapeHtml(n.text||'')+'</div>';
       card.onclick=function(){openEditNote(n.id);};ng.appendChild(card);
     });
   }
@@ -858,15 +906,16 @@ function hashPin(pin){
 
 function savePin(pin,cb){
   hashPin(pin).then(function(hash){
+    var prevHash=getPin();
     localStorage.setItem(PIN_KEY,hash);
-    gsSave(PIN_KEY,hash);
+    gsSave(PIN_KEY,hash,{currentPin:prevHash});
     if(cb) cb();
   });
 }
 
 function checkPin(pin,cb){
   hashPin(pin).then(function(hash){
-    cb(hash===getPin());
+    cb(hash===getPin(),hash);
   });
 }
 
@@ -891,21 +940,25 @@ function pinKey(k){
   updatePinDots('pd',pinInput);
   if(pinInput.length===4){
     setTimeout(function(){
-      checkPin(pinInput,function(ok){
-        if(ok){
+      checkPin(pinInput,function(ok,hash){
+        if(!ok){
+          document.getElementById('pin-error').textContent='Неверный PIN';
           pinInput='';
-          if(!localStorage.getItem(FACEID_KEY)){
-            registerFaceId(function(){
-              closeOv('ov-pin');
-              if(pendingPageBtn){
-                doShowPage('finance',pendingPageBtn);
-                pendingPageBtn=null;
-              } else {
-                finHidden=false;
-                renderFin();
-              }
-            });
-          } else {
+          updatePinDots('pd',pinInput);
+          return;
+        }
+        // Локальная проверка прошла — теперь запрашиваем финансовые данные
+        // у сервера с этим же хэшем. Сервер отдаст их, только если хэш совпал
+        // и там же. Это и есть реальная защита, а не просто скрытие вкладки.
+        loadFinsWithPin(hash,function(serverOk){
+          if(!serverOk){
+            document.getElementById('pin-error').textContent='Не удалось подтвердить PIN на сервере';
+            pinInput='';
+            updatePinDots('pd',pinInput);
+            return;
+          }
+          pinInput='';
+          function proceed(){
             closeOv('ov-pin');
             if(pendingPageBtn){
               doShowPage('finance',pendingPageBtn);
@@ -915,11 +968,12 @@ function pinKey(k){
               renderFin();
             }
           }
-        } else {
-          document.getElementById('pin-error').textContent='Неверный PIN';
-          pinInput='';
-          updatePinDots('pd',pinInput);
-        }
+          if(!localStorage.getItem(FACEID_KEY)){
+            registerFaceId(proceed);
+          } else {
+            proceed();
+          }
+        });
       });
     },200);
   }
@@ -1074,9 +1128,10 @@ function showPinReset(){
 
 function confirmPinReset(){
   localStorage.removeItem(PIN_KEY);
-  gsSave(PIN_KEY,'');
-  fins=[];
-  save('re3_fins',fins);
+  gsSave(PIN_KEY,'',null,function(){
+    fins=[];
+    save('re3_fins',fins);
+  });
   closeOv('ov-pin-reset');
   showPinSetup();
 }
