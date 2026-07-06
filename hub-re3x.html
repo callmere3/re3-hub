@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- RE3 Hub v1.9.5 | 2026-07-06 | security: fixed Face ID data-fetch gap, moved PIN hash off query string to POST -->
+<!-- RE3 Hub v1.9.6 | 2026-07-06 | UX: added loading spinner during PIN/server verification instead of apparent freeze -->
 <html lang="ru" data-theme="dark">
 <head>
 <meta charset="UTF-8">
@@ -941,10 +941,18 @@ function openPin(){
   pinInput='';
   updatePinDots('pd',pinInput);
   document.getElementById('pin-error').textContent='';
+  setPinBusy(false);
   document.getElementById('ov-pin').classList.add('open');
   showFaceIdBtn();
   var stored=localStorage.getItem(FACEID_KEY);
   if(stored) setTimeout(tryFaceId, 300);
+}
+
+function setPinBusy(busy){
+  var loading=document.getElementById('pin-loading');
+  var keypad=document.getElementById('pin-keypad-wrap');
+  if(loading) loading.style.display=busy?'flex':'none';
+  if(keypad) keypad.style.display=busy?'none':'block';
 }
 
 function pinKey(k){
@@ -952,9 +960,11 @@ function pinKey(k){
   pinInput+=k;
   updatePinDots('pd',pinInput);
   if(pinInput.length===4){
+    setPinBusy(true);
     setTimeout(function(){
       checkPin(pinInput,function(ok,hash){
         if(!ok){
+          setPinBusy(false);
           document.getElementById('pin-error').textContent='Неверный PIN';
           pinInput='';
           updatePinDots('pd',pinInput);
@@ -965,6 +975,7 @@ function pinKey(k){
         // и там же. Это и есть реальная защита, а не просто скрытие вкладки.
         loadFinsWithPin(hash,function(serverOk){
           if(!serverOk){
+            setPinBusy(false);
             document.getElementById('pin-error').textContent='Не удалось подтвердить PIN на сервере';
             pinInput='';
             updatePinDots('pd',pinInput);
@@ -972,6 +983,7 @@ function pinKey(k){
           }
           pinInput='';
           function proceed(){
+            setPinBusy(false);
             closeOv('ov-pin');
             if(pendingPageBtn){
               doShowPage('finance',pendingPageBtn);
@@ -1188,7 +1200,9 @@ function tryFaceId(){
     // Face ID подтверждает личность локально, но данные всё равно тянем
     // с сервера с уже известным (сохранённым) хэшем PIN — иначе после
     // входа по Face ID финансы будут пустыми.
+    setPinBusy(true);
     loadFinsWithPin(getPin(),function(serverOk){
+      setPinBusy(false);
       if(!serverOk){
         document.getElementById('pin-error').textContent='Не удалось подтвердить PIN на сервере, введи PIN';
         return;
@@ -1451,6 +1465,11 @@ loadAll(function(){
       <div style="width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.15);transition:background .15s" id="pd2"></div>
       <div style="width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.15);transition:background .15s" id="pd3"></div>
     </div>
+    <div id="pin-loading" style="display:none;flex-direction:column;align-items:center;gap:14px;padding:24px 0">
+      <div style="width:28px;height:28px;border-radius:50%;border:3px solid rgba(255,255,255,.15);border-top-color:#c97070;animation:spin .7s linear infinite"></div>
+      <div style="font-size:13px;color:rgba(255,255,255,.4)">Проверяем PIN...</div>
+    </div>
+    <div id="pin-keypad-wrap">
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:240px;margin:0 auto">
       <button class="pin-key" onclick="pinKey('1')">1</button>
       <button class="pin-key" onclick="pinKey('2')">2</button>
@@ -1477,6 +1496,7 @@ loadAll(function(){
         </svg>
         Войти через Face ID
       </button>
+    </div>
     </div>
     <div style="margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.07);display:flex;justify-content:space-between">
       <button onclick="showPinChange()" style="background:none;border:none;color:rgba(255,255,255,.25);font-size:11px;cursor:pointer;font-family:inherit">Изменить PIN</button>
