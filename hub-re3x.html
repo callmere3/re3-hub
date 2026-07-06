@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- RE3 Hub v1.9.9 | 2026-07-07 | FIX: replaced native <select> (status rilsa, status fin) with custom dark-themed dropdown — native OS/browser hover highlight couldn't be fully restyled -->
+<!-- RE3 Hub v2.0.2 | 2026-07-07 | CHANGE: client field only editable for client-type projects (personal always "RE3"); list row shows "Название - Клиент" merged, comment below -->
 <html lang="ru" data-theme="dark">
 <head>
 <meta charset="UTF-8">
@@ -192,6 +192,18 @@ body{padding-bottom:env(safe-area-inset-bottom)}
 .cselect-opt{padding:10px 11px;font-size:13px;color:#fff;cursor:pointer}
 .cselect-opt:hover{background:rgba(255,255,255,.1)}
 .cselect-opt.sel{color:var(--accent-text);font-weight:600}
+.proj-row{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:var(--radius-lg);padding:12px 14px;cursor:pointer;transition:border-color .15s;margin-bottom:8px}
+.proj-row:hover{border-color:rgba(255,255,255,.18)}
+.proj-row-top{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.proj-status-pill{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;padding:2px 7px;border-radius:20px}
+.proj-status-arrangement{background:var(--accent-bg);color:var(--accent-text)}
+.proj-status-mixing{background:var(--warning-bg);color:var(--warning)}
+.proj-status-ready{background:var(--success-bg);color:var(--success)}
+.proj-type-badge{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;padding:2px 6px;border-radius:20px}
+.proj-type-client{background:rgba(91,155,213,.15);color:#7fb2e5}
+.proj-type-personal{background:var(--accent-bg);color:var(--accent-text)}
+.proj-name{font-size:13px;font-weight:600;color:#fff;margin-bottom:2px}
+.proj-desc{font-size:11px;color:var(--text3);line-height:1.4;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .fl input:focus,.fl select:focus,.fl textarea:focus{border-color:rgba(155,48,48,.6);background:rgba(255,255,255,.08)}
 .fl textarea{min-height:100px;resize:vertical;line-height:1.65}
 .fl-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:end}
@@ -246,6 +258,7 @@ body{padding-bottom:env(safe-area-inset-bottom)}
   <button class="nav-logo" onclick="openSettings()">RE3</button>
   <div class="nav-sep"></div>
   <button class="nav-btn active" onclick="showPage('home',this)">Главная</button>
+  <button class="nav-btn" onclick="showPage('projects',this)">Проекты</button>
   <button class="nav-btn" onclick="showPage('notes',this)">Заметки</button>
   <button class="nav-btn" onclick="showPage('calendar',this)">Календарь</button>
   <button class="nav-btn" onclick="showPage('finance',this)">Финансы</button>
@@ -256,6 +269,12 @@ body{padding-bottom:env(safe-area-inset-bottom)}
 
 <!-- HOME -->
 <div class="page active" id="page-home" style="display:none;justify-content:center"><div id="home-card"></div></div>
+
+<!-- PROJECTS -->
+<div class="page" id="page-projects">
+  <div class="section-header"><span class="section-title">Проекты</span><button class="btn-primary" onclick="openProjectModal()">+ Добавить</button></div>
+  <div id="projects-list"></div>
+</div>
 
 <!-- NOTES -->
 <div class="page" id="page-notes"><div id="notes-root"></div></div>
@@ -386,6 +405,29 @@ body{padding-bottom:env(safe-area-inset-bottom)}
   </div>
 </div>
 
+<!-- MODAL: Project -->
+<div class="ov" id="ov-project">
+  <div class="modal">
+    <div class="modal-title" id="projtit">Новый проект</div>
+    <div class="fl"><label>Название</label><input id="proj-name" type="text" placeholder="Например: Трек для H1GH"></div>
+    <div class="fl-row">
+      <div class="fl"><label>Тип</label>
+        <select id="proj-type"><option value="client">Клиентский</option><option value="personal">Личный</option></select>
+      </div>
+      <div class="fl" id="proj-client-wrap"><label>Клиент/артист</label><input id="proj-client" type="text" placeholder=""></div>
+    </div>
+    <div class="fl"><label>Статус</label>
+      <select id="proj-status"><option value="arrangement">Аранжировка</option><option value="mixing">Сведение</option><option value="ready">Готов</option></select>
+    </div>
+    <div class="fl"><label>Комментарий/заметки</label><textarea id="proj-desc" placeholder=""></textarea></div>
+    <div class="macts">
+      <button class="btn-danger" id="projdl" onclick="delProject()" style="display:none">Удалить</button>
+      <button class="btn-ghost" onclick="closeOv('ov-project')">Отмена</button>
+      <button class="btn-primary" onclick="saveProject()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: Finance -->
 <div class="ov" id="ov-fin">
   <div class="modal">
@@ -458,9 +500,9 @@ var SCRIPT_URL='https://script.google.com/macros/s/AKfycbxWaVLP8OUKgyse3dptdWcnc
 var GS_TOKEN='wG5u4wp8iupIbCg8WbUghKxoE_IuLMSz';
 var theme='dark';
 var home={"name":"RE3","role":"Music Producer · Mixing engineer · Artist","bio":"Credits: Люся Чеботина, Jakone, TATAR, mzlff, СТС, ТНТ","ig":"https://instagram.com/re3_music","tg":"https://t.me/re3_music","ym":"","photo":"","ig-qr":"","tg-qr":""};
-var reels=[],fins=[],folders=[],notes=[],releases=[],events=[];
+var reels=[],fins=[],folders=[],notes=[],releases=[],events=[],projects=[];
 var cur=new Date(); cur.setDate(1);
-var releid=null,pickedDate='',reid=null,finEid=null,finType='income',neid=null,eventEid=null;
+var releid=null,pickedDate='',reid=null,finEid=null,finType='income',neid=null,eventEid=null,projEid=null;
 var notesView='folders',activeFolderId=null;
 
 // Экранирование пользовательских строк перед вставкой в innerHTML —
@@ -515,7 +557,7 @@ function loadAll(cb){
   showLoading(true);
   // re3_fins сюда НЕ включаем — финансовые данные подгружаются отдельно,
   // только после успешного ввода PIN и его проверки сервером (см. loadFinsWithPin).
-  var keys=['re3_home','re3_reels','re3_folders','re3_notes2','re3_releases','re3_events','re3_pin'];
+  var keys=['re3_home','re3_reels','re3_folders','re3_notes2','re3_releases','re3_events','re3_projects','re3_pin'];
   var done=0;
   keys.forEach(function(k){
     gsGet(k,function(val){
@@ -531,6 +573,7 @@ function loadAll(cb){
         else if(k==='re3_notes2') notes=data;
         else if(k==='re3_releases') releases=data;
         else if(k==='re3_events') events=data;
+        else if(k==='re3_projects') projects=data;
         else if(k==='re3_pin') localStorage.setItem(PIN_KEY,data);
       }
       done++;
@@ -595,6 +638,7 @@ function doShowPage(id,btn){
   if(id==='calendar'){autoPublishReels();renderCal();}
   if(id==='finance') renderFin();
   if(id==='notes') renderNotes();
+  if(id==='projects') renderProjects();
 }
 
 /* HOME */
@@ -795,6 +839,93 @@ function delEvent(){
   events=events.filter(function(x){return x.id!==eventEid;});
   save('re3_events',events);closeOv('ov-event');renderCal();
   updatePushSchedule();
+}
+
+/* PROJECTS */
+var PROJ_STAGES=['arrangement','mixing','ready'];
+function projStatusLabel(status){
+  if(status==='mixing') return 'Сведение';
+  if(status==='ready') return 'Готов';
+  return 'Аранжировка';
+}
+function updateProjClientVisibility(){
+  var type=document.getElementById('proj-type').value;
+  var wrap=document.getElementById('proj-client-wrap');
+  if(type==='personal'){
+    wrap.style.display='none';
+    document.getElementById('proj-client').value='RE3';
+  } else {
+    wrap.style.display='block';
+  }
+}
+function renderProjects(){
+  var root=document.getElementById('projects-list');
+  if(!projects.length){root.innerHTML='<div class="empty-state">Нет проектов</div>';return;}
+  var sorted=projects.slice().sort(function(a,b){
+    return PROJ_STAGES.indexOf(a.status)-PROJ_STAGES.indexOf(b.status);
+  });
+  root.innerHTML='';
+  sorted.forEach(function(p){
+    var row=document.createElement('div');row.className='proj-row';
+    var typeLabel=p.type==='client'?'Клиент':'Личный';
+    var typeClass=p.type==='client'?'proj-type-client':'proj-type-personal';
+    var statusClass='proj-status-'+(p.status||'arrangement');
+    var titleLine=p.client?(p.name+' - '+p.client):p.name;
+    row.innerHTML=
+      '<div class="proj-row-top">'+
+        '<span class="proj-type-badge '+typeClass+'">'+typeLabel+'</span>'+
+        '<span class="proj-status-pill '+statusClass+'">'+projStatusLabel(p.status)+'</span>'+
+      '</div>'+
+      '<div class="proj-name">'+escapeHtml(titleLine)+'</div>'+
+      (p.desc?'<div class="proj-desc">'+escapeHtml(p.desc)+'</div>':'');
+    row.onclick=function(){openEditProject(p.id);};
+    root.appendChild(row);
+  });
+}
+function openProjectModal(){
+  projEid=null;
+  document.getElementById('projtit').textContent='Новый проект';
+  document.getElementById('proj-name').value='';
+  document.getElementById('proj-type').value='client';syncCSelect('proj-type');
+  document.getElementById('proj-client').value='';
+  document.getElementById('proj-status').value='arrangement';syncCSelect('proj-status');
+  document.getElementById('proj-desc').value='';
+  document.getElementById('projdl').style.display='none';
+  updateProjClientVisibility();
+  document.getElementById('ov-project').classList.add('open');
+}
+function openEditProject(id){
+  var p=projects.find(function(x){return x.id===id;});if(!p)return;projEid=id;
+  document.getElementById('projtit').textContent='Редактировать проект';
+  document.getElementById('proj-name').value=p.name;
+  document.getElementById('proj-type').value=p.type||'client';syncCSelect('proj-type');
+  document.getElementById('proj-client').value=p.client||'';
+  document.getElementById('proj-status').value=p.status||'arrangement';syncCSelect('proj-status');
+  document.getElementById('proj-desc').value=p.desc||'';
+  document.getElementById('projdl').style.display='inline-block';
+  updateProjClientVisibility();
+  document.getElementById('ov-project').classList.add('open');
+}
+function saveProject(){
+  var name=document.getElementById('proj-name').value.trim();
+  if(!name){alert('Укажи название проекта');return;}
+  var type=document.getElementById('proj-type').value;
+  var client=type==='personal'?'RE3':document.getElementById('proj-client').value.trim();
+  var obj={
+    name:name,
+    type:type,
+    client:client,
+    status:document.getElementById('proj-status').value,
+    desc:document.getElementById('proj-desc').value.trim()
+  };
+  if(projEid){Object.assign(projects.find(function(x){return x.id===projEid;}),obj);}
+  else{projects.push(Object.assign({id:Date.now().toString()},obj));}
+  save('re3_projects',projects);closeOv('ov-project');renderProjects();
+}
+function delProject(){
+  if(!projEid||!confirm('Удалить проект?'))return;
+  projects=projects.filter(function(x){return x.id!==projEid;});
+  save('re3_projects',projects);closeOv('ov-project');renderProjects();
 }
 
 /* FINANCE */
@@ -1491,7 +1622,12 @@ function initCSelect(id){
   for(var i=0;i<sel.options.length;i++){
     (function(opt){
       var o=document.createElement('div');o.className='cselect-opt';o.textContent=opt.textContent;o.setAttribute('data-val',opt.value);
-      o.onclick=function(e){e.stopPropagation();sel.value=opt.value;syncCSelect(id);wrap.classList.remove('open');};
+      o.onclick=function(e){
+        e.stopPropagation();sel.value=opt.value;syncCSelect(id);wrap.classList.remove('open');
+        var evt;
+        try{evt=new Event('change',{bubbles:true});}catch(err){evt=document.createEvent('Event');evt.initEvent('change',true,true);}
+        sel.dispatchEvent(evt);
+      };
       menu.appendChild(o);
     })(sel.options[i]);
   }
@@ -1525,7 +1661,7 @@ document.addEventListener('click',function(){
 });
 
 /* Swipe navigation */
-var pages=['home','notes','calendar','finance'];
+var pages=['home','projects','notes','calendar','finance'];
 var currentPage=0;
 var touchStartX=0;
 var touchStartY=0;
@@ -1563,11 +1699,14 @@ document.addEventListener('touchend',function(e){
   var btn=document.querySelectorAll('.nav-btn')[nextPage];
   showPage(pages[nextPage],btn);
 },{passive:true});
-['ov-home','ov-daypick','ov-release','ov-reel','ov-event','ov-fin','ov-folder','ov-note','ov-settings'].forEach(function(id){
+['ov-home','ov-daypick','ov-release','ov-reel','ov-event','ov-fin','ov-folder','ov-note','ov-settings','ov-project'].forEach(function(id){
   document.getElementById(id).onclick=function(e){if(e.target===document.getElementById(id))closeOv(id);};
 });
 initCSelect('rs');
 initCSelect('fn-status');
+initCSelect('proj-type');
+initCSelect('proj-status');
+document.getElementById('proj-type').addEventListener('change',updateProjClientVisibility);
 
 loadAll(function(){
   autoPublishReels();
