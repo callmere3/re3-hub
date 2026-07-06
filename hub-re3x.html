@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- RE3 Hub v1.9.4 | 2026-07-06 | security fix: token auth for GAS backend, server-side PIN gate for finance data, XSS escaping -->
+<!-- RE3 Hub v1.9.5 | 2026-07-06 | security: fixed Face ID data-fetch gap, moved PIN hash off query string to POST -->
 <html lang="ru" data-theme="dark">
 <head>
 <meta charset="UTF-8">
@@ -506,18 +506,31 @@ function loadAll(cb){
 }
 
 // Подгружает финансы с сервера, но только если хэш PIN совпадает с сохранённым
-// на сервере. Это и есть настоящая защита — не через UI, а через сам запрос данных.
+// на сервере. Идёт через POST (не GET), чтобы хэш PIN не светился в URL.
 function loadFinsWithPin(pinHash,cb){
-  gsGet('re3_fins',function(val,err){
-    if(err==='pin_required'){cb(false);return;}
-    var data=val;
-    if(data===null){
-      var loc=localStorage.getItem('re3_fins');
-      try{data=loc?JSON.parse(loc):[];}catch(e){data=[];}
-    }
-    fins=data||[];
-    cb(true);
-  },'&pin='+encodeURIComponent(pinHash));
+  showSyncing();
+  fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({token:GS_TOKEN,key:'re3_fins',action:'read',pin:pinHash})})
+    .then(function(r){return r.text();})
+    .then(function(t){
+      hideSyncing();
+      var parsed=null;
+      try{parsed=JSON.parse(t);}catch(e){}
+      if(parsed && typeof parsed==='object' && !Array.isArray(parsed) && parsed.error){
+        if(parsed.error==='too_many_attempts'){
+          document.getElementById('pin-error').textContent='Слишком много попыток, подожди немного';
+        }
+        cb(false);
+        return;
+      }
+      var data=parsed;
+      if(data===null){
+        var loc=localStorage.getItem('re3_fins');
+        try{data=loc?JSON.parse(loc):[];}catch(e){data=[];}
+      }
+      fins=data||[];
+      cb(true);
+    })
+    .catch(function(){hideSyncing();cb(false);});
 }
 
 
@@ -1172,14 +1185,23 @@ function tryFaceId(){
       timeout:60000
     }
   }).then(function(){
-    closeOv('ov-pin');
-    if(pendingPageBtn){
-      doShowPage('finance',pendingPageBtn);
-      pendingPageBtn=null;
-    } else {
-      finHidden=false;
-      renderFin();
-    }
+    // Face ID подтверждает личность локально, но данные всё равно тянем
+    // с сервера с уже известным (сохранённым) хэшем PIN — иначе после
+    // входа по Face ID финансы будут пустыми.
+    loadFinsWithPin(getPin(),function(serverOk){
+      if(!serverOk){
+        document.getElementById('pin-error').textContent='Не удалось подтвердить PIN на сервере, введи PIN';
+        return;
+      }
+      closeOv('ov-pin');
+      if(pendingPageBtn){
+        doShowPage('finance',pendingPageBtn);
+        pendingPageBtn=null;
+      } else {
+        finHidden=false;
+        renderFin();
+      }
+    });
   }).catch(function(e){
     document.getElementById('pin-error').textContent='Face ID не прошёл, введи PIN';
   });
