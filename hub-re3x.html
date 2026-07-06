@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- RE3 Hub v1.9.8 | 2026-07-07 | FIX: removed event type field, past events turn green like published reels, fixed white select option background on dark theme -->
+<!-- RE3 Hub v1.9.9 | 2026-07-07 | FIX: replaced native <select> (status rilsa, status fin) with custom dark-themed dropdown — native OS/browser hover highlight couldn't be fully restyled -->
 <html lang="ru" data-theme="dark">
 <head>
 <meta charset="UTF-8">
@@ -181,6 +181,17 @@ body{padding-bottom:env(safe-area-inset-bottom)}
 .fl label{display:block;font-size:11px;color:var(--text3);margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
 .fl input,.fl select{width:100%;font-family:inherit;font-size:13px;padding:9px 11px;border:1px solid rgba(255,255,255,.1);border-radius:var(--radius);background:rgba(255,255,255,.06);color:#fff;outline:none;height:42px;-webkit-appearance:none;box-sizing:border-box}.fl textarea{width:100%;font-family:inherit;font-size:13px;padding:9px 11px;border:1px solid rgba(255,255,255,.1);border-radius:var(--radius);background:rgba(255,255,255,.06);color:#fff;outline:none;box-sizing:border-box}
 .fl select option{background:#1a1a1a;color:#fff}
+.cselect{position:relative}
+.cselect-btn{width:100%;font-family:inherit;font-size:13px;padding:9px 11px;border:1px solid rgba(255,255,255,.1);border-radius:var(--radius);background:rgba(255,255,255,.06);color:#fff;height:42px;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
+.cselect-btn:hover{border-color:rgba(255,255,255,.18)}
+.cselect.open .cselect-btn{border-color:rgba(155,48,48,.6);background:rgba(255,255,255,.08)}
+.cselect-arrow{font-size:10px;color:var(--text3);transition:transform .15s;margin-left:8px}
+.cselect.open .cselect-arrow{transform:rotate(180deg)}
+.cselect-menu{display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:#1a1a1a;border:1px solid rgba(255,255,255,.14);border-radius:var(--radius);overflow:hidden;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.cselect.open .cselect-menu{display:block}
+.cselect-opt{padding:10px 11px;font-size:13px;color:#fff;cursor:pointer}
+.cselect-opt:hover{background:rgba(255,255,255,.1)}
+.cselect-opt.sel{color:var(--accent-text);font-weight:600}
 .fl input:focus,.fl select:focus,.fl textarea:focus{border-color:rgba(155,48,48,.6);background:rgba(255,255,255,.08)}
 .fl textarea{min-height:100px;resize:vertical;line-height:1.65}
 .fl-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:end}
@@ -723,7 +734,7 @@ function openReelModal(ds){
   document.getElementById('rtit').textContent='Новый рилс';
   document.getElementById('rn').value='';document.getElementById('rd').value=ds||'';
   document.getElementById('rt').value='';
-  document.getElementById('rs').value='idea';document.getElementById('rc').value='';
+  document.getElementById('rs').value='idea';syncCSelect('rs');document.getElementById('rc').value='';
   document.getElementById('rdl').style.display='none';
   document.getElementById('ov-reel').classList.add('open');
 }
@@ -732,7 +743,7 @@ function openEditReel(id){
   document.getElementById('rtit').textContent='Редактировать рилс';
   document.getElementById('rn').value=r.name;document.getElementById('rd').value=r.date;
   document.getElementById('rt').value=r.time||'';
-  document.getElementById('rs').value=r.status;document.getElementById('rc').value=r.desc||'';
+  document.getElementById('rs').value=r.status;syncCSelect('rs');document.getElementById('rc').value=r.desc||'';
   document.getElementById('rdl').style.display='inline-block';
   document.getElementById('ov-reel').classList.add('open');
 }
@@ -832,7 +843,7 @@ function openFinModal(type){
   finType=type;finEid=null;
   document.getElementById('ftit').textContent=type==='income'?'Новый доход':'Новый расход';
   document.getElementById('fn-name').value='';document.getElementById('fn-amount').value='';
-  document.getElementById('fn-desc').value='';document.getElementById('fn-status').value='paid';
+  document.getElementById('fn-desc').value='';document.getElementById('fn-status').value='paid';syncCSelect('fn-status');
   document.getElementById('fn-status-wrap').style.display=type==='income'?'block':'none';
   document.getElementById('fdl').style.display='none';
   document.getElementById('ov-fin').classList.add('open');
@@ -841,7 +852,7 @@ function openEditFin(id){
   var f=fins.find(function(x){return x.id===id;});if(!f)return;finEid=id;finType=f.type;
   document.getElementById('ftit').textContent=f.type==='income'?'Редактировать доход':'Редактировать расход';
   document.getElementById('fn-name').value=f.name;document.getElementById('fn-amount').value=f.amount;
-  document.getElementById('fn-desc').value=f.desc||'';document.getElementById('fn-status').value=f.status||'paid';
+  document.getElementById('fn-desc').value=f.desc||'';document.getElementById('fn-status').value=f.status||'paid';syncCSelect('fn-status');
   document.getElementById('fn-status-wrap').style.display=f.type==='income'?'block':'none';
   document.getElementById('fdl').style.display='inline-block';
   document.getElementById('ov-fin').classList.add('open');
@@ -1464,6 +1475,55 @@ function urlB64ToUint8Array(b64){
 
 function closeOv(id){document.getElementById(id).classList.remove('open');}
 
+/* CUSTOM SELECT — нативный <select> остаётся скрытым источником значения,
+   поверх него рисуем полностью управляемый темой выпадающий список.
+   Так весь остальной код (saveReel/saveFin и т.п.) не меняется. */
+function initCSelect(id){
+  var sel=document.getElementById(id);
+  if(!sel||sel.getAttribute('data-cselect-init'))return;
+  sel.setAttribute('data-cselect-init','1');
+  var wrap=document.createElement('div');wrap.className='cselect';wrap.id=id+'-cselect';
+  var btn=document.createElement('div');btn.className='cselect-btn';
+  var val=document.createElement('span');val.className='cselect-val';
+  var arrow=document.createElement('span');arrow.className='cselect-arrow';arrow.textContent='\u25BE';
+  btn.appendChild(val);btn.appendChild(arrow);
+  var menu=document.createElement('div');menu.className='cselect-menu';
+  for(var i=0;i<sel.options.length;i++){
+    (function(opt){
+      var o=document.createElement('div');o.className='cselect-opt';o.textContent=opt.textContent;o.setAttribute('data-val',opt.value);
+      o.onclick=function(e){e.stopPropagation();sel.value=opt.value;syncCSelect(id);wrap.classList.remove('open');};
+      menu.appendChild(o);
+    })(sel.options[i]);
+  }
+  wrap.appendChild(btn);wrap.appendChild(menu);
+  btn.onclick=function(e){
+    e.stopPropagation();
+    var all=document.querySelectorAll('.cselect.open');
+    for(var i=0;i<all.length;i++){if(all[i]!==wrap)all[i].classList.remove('open');}
+    wrap.classList.toggle('open');
+  };
+  sel.style.display='none';
+  sel.parentNode.insertBefore(wrap,sel);
+  syncCSelect(id);
+}
+function syncCSelect(id){
+  var sel=document.getElementById(id);
+  var wrap=document.getElementById(id+'-cselect');
+  if(!sel||!wrap)return;
+  var val=wrap.querySelector('.cselect-val');
+  var selectedOpt=sel.options[sel.selectedIndex];
+  val.textContent=selectedOpt?selectedOpt.textContent:'';
+  var opts=wrap.querySelectorAll('.cselect-opt');
+  for(var i=0;i<opts.length;i++){
+    if(opts[i].getAttribute('data-val')===sel.value) opts[i].classList.add('sel');
+    else opts[i].classList.remove('sel');
+  }
+}
+document.addEventListener('click',function(){
+  var all=document.querySelectorAll('.cselect.open');
+  for(var i=0;i<all.length;i++){all[i].classList.remove('open');}
+});
+
 /* Swipe navigation */
 var pages=['home','notes','calendar','finance'];
 var currentPage=0;
@@ -1506,6 +1566,8 @@ document.addEventListener('touchend',function(e){
 ['ov-home','ov-daypick','ov-release','ov-reel','ov-event','ov-fin','ov-folder','ov-note','ov-settings'].forEach(function(id){
   document.getElementById(id).onclick=function(e){if(e.target===document.getElementById(id))closeOv(id);};
 });
+initCSelect('rs');
+initCSelect('fn-status');
 
 loadAll(function(){
   autoPublishReels();
