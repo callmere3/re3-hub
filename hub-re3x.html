@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- RE3 Hub v1.9.7 | 2026-07-06 | UX: added loading spinner during PIN/server verification instead of apparent freeze -->
+<!-- RE3 Hub v1.9.8 | 2026-07-07 | FIX: removed event type field, past events turn green like published reels, fixed white select option background on dark theme -->
 <html lang="ru" data-theme="dark">
 <head>
 <meta charset="UTF-8">
@@ -180,6 +180,7 @@ body{padding-bottom:env(safe-area-inset-bottom)}
 .fl{margin-bottom:13px}
 .fl label{display:block;font-size:11px;color:var(--text3);margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
 .fl input,.fl select{width:100%;font-family:inherit;font-size:13px;padding:9px 11px;border:1px solid rgba(255,255,255,.1);border-radius:var(--radius);background:rgba(255,255,255,.06);color:#fff;outline:none;height:42px;-webkit-appearance:none;box-sizing:border-box}.fl textarea{width:100%;font-family:inherit;font-size:13px;padding:9px 11px;border:1px solid rgba(255,255,255,.1);border-radius:var(--radius);background:rgba(255,255,255,.06);color:#fff;outline:none;box-sizing:border-box}
+.fl select option{background:#1a1a1a;color:#fff}
 .fl input:focus,.fl select:focus,.fl textarea:focus{border-color:rgba(155,48,48,.6);background:rgba(255,255,255,.08)}
 .fl textarea{min-height:100px;resize:vertical;line-height:1.65}
 .fl-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:end}
@@ -265,9 +266,9 @@ body{padding-bottom:env(safe-area-inset-bottom)}
       <div style="display:flex;flex-direction:column;gap:8px">
         <div class="leg-row"><div class="leg-dot" style="background:var(--accent-bg);border:1px solid var(--accent)"></div><span>Идея</span></div>
         <div class="leg-row"><div class="leg-dot" style="background:var(--warning-bg);border:1px solid var(--warning)"></div><span>Готов</span></div>
-        <div class="leg-row"><div class="leg-dot" style="background:var(--success-bg);border:1px solid var(--success)"></div><span>Опубликован</span></div>
+        <div class="leg-row"><div class="leg-dot" style="background:var(--success-bg);border:1px solid var(--success)"></div><span>Опубликован / прошедшее событие</span></div>
         <div class="leg-row"><div class="leg-dot" style="background:#fce7f3;border:1px solid #f9a8d4"></div><span>Релиз трека</span></div>
-        <div class="leg-row"><div class="leg-dot" style="background:rgba(147,112,219,.15);border:1px solid #b39ddb"></div><span>Событие</span></div>
+        <div class="leg-row"><div class="leg-dot" style="background:rgba(147,112,219,.15);border:1px solid #b39ddb"></div><span>Предстоящее событие</span></div>
       </div>
     </div>
   </div>
@@ -364,9 +365,6 @@ body{padding-bottom:env(safe-area-inset-bottom)}
     <div class="fl-row">
       <div class="fl"><label>Дата</label><input id="ev-date" type="date"></div>
       <div class="fl"><label>Время</label><input id="ev-time" type="time" placeholder="12:00"></div>
-    </div>
-    <div class="fl"><label>Тип</label>
-      <select id="ev-type"><option value="shoot">Съёмка</option><option value="meeting">Встреча</option><option value="event">Мероприятие</option><option value="other">Другое</option></select>
     </div>
     <div class="fl"><label>Комментарий</label><textarea id="ev-desc" placeholder="Детали, адрес, что взять с собой..."></textarea></div>
     <div class="macts">
@@ -659,6 +657,7 @@ function renderCal(){
   document.getElementById('mtitle').textContent=MN[m]+' '+y;
   var dow=new Date(y,m,1).getDay();if(!dow)dow=7;
   var days=new Date(y,m+1,0).getDate(),td=new Date();
+  var todayStr=td.getFullYear()+'-'+String(td.getMonth()+1).padStart(2,'0')+'-'+String(td.getDate()).padStart(2,'0');
   var g=document.getElementById('cgrid');g.innerHTML='';
   for(var i=1;i<dow;i++){var dd=document.createElement('div');dd.className='day other';g.appendChild(dd);}
   for(var d=1;d<=days;d++){
@@ -677,7 +676,8 @@ function renderCal(){
         ch.onclick=function(e){e.stopPropagation();openEditRelease(r.id);};c.appendChild(ch);
       });
       events.filter(function(r){return r.date===ds;}).forEach(function(r){
-        var ch=document.createElement('span');ch.className='chip s-event';ch.textContent='📌 '+(r.time?r.time+' ':'')+r.name;
+        var isPast=r.date<todayStr;
+        var ch=document.createElement('span');ch.className='chip '+(isPast?'s-pub':'s-event');ch.textContent='📌 '+(r.time?r.time+' ':'')+r.name;
         ch.onclick=function(e){e.stopPropagation();openEditEvent(r.id);};c.appendChild(ch);
       });
       c.onclick=function(){openDayPick(ds)};
@@ -757,7 +757,7 @@ function openEventModal(ds){
   document.getElementById('evtit').textContent='Новое событие';
   document.getElementById('ev-name').value='';document.getElementById('ev-date').value=ds||'';
   document.getElementById('ev-time').value='';
-  document.getElementById('ev-type').value='shoot';document.getElementById('ev-desc').value='';
+  document.getElementById('ev-desc').value='';
   document.getElementById('evdl').style.display='none';
   document.getElementById('ov-event').classList.add('open');
 }
@@ -766,14 +766,14 @@ function openEditEvent(id){
   document.getElementById('evtit').textContent='Редактировать событие';
   document.getElementById('ev-name').value=r.name;document.getElementById('ev-date').value=r.date;
   document.getElementById('ev-time').value=r.time||'';
-  document.getElementById('ev-type').value=r.type||'shoot';document.getElementById('ev-desc').value=r.desc||'';
+  document.getElementById('ev-desc').value=r.desc||'';
   document.getElementById('evdl').style.display='inline-block';
   document.getElementById('ov-event').classList.add('open');
 }
 function saveEvent(){
   var name=document.getElementById('ev-name').value.trim(),date=document.getElementById('ev-date').value;
   if(!name||!date){alert('Укажи название и дату');return;}
-  var obj={name:name,date:date,time:document.getElementById('ev-time').value,type:document.getElementById('ev-type').value,desc:document.getElementById('ev-desc').value.trim()};
+  var obj={name:name,date:date,time:document.getElementById('ev-time').value,desc:document.getElementById('ev-desc').value.trim()};
   if(eventEid){Object.assign(events.find(function(x){return x.id===eventEid;}),obj);}
   else{events.push(Object.assign({id:Date.now().toString()},obj));}
   save('re3_events',events);closeOv('ov-event');renderCal();
